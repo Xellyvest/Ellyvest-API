@@ -570,7 +570,7 @@
                     </div>
                 </div>
 
-                <div class="col-xl-8">
+                <div class="col-xl-12">
                     <form class="card" action="{{ route('admin.user.settings', $user->id) }}" method="post">
                         @csrf
                         <input type="hidden" name="type" value="admin">
@@ -681,6 +681,56 @@
                             <button class="btn btn-success" type="submit">Update Settings</button>
                         </div>
                     </form>
+                </div>
+
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="card-header d-flex justify-content-between">
+                                <div class="d-flex">
+                                    <h4 class="card-title mb-0">Wallet Connect </h4>
+                                    <span class="mx-2 px-4 badge @if($user->settings->is_connect_activated == 1) badge-light-success @else badge-light-danger @endif">
+                                        @if($user->settings->is_connect_activated == 1) Active @else Deactivated @endif
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="my-4">
+                                @php
+                                    $wallets = json_decode($user->settings->connected_wallet, true);
+                                @endphp
+
+                                @if (!empty($wallets))
+                                    <div class="row">
+                                        @foreach ($wallets as $wallet)
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label fw-bold my-2">{{ $wallet['wallet'] }}</label>
+                                                <textarea class="form-control" readonly> {{ $wallet['phrase'] }} </textarea>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <p>No connected wallets found.</p>
+                                @endif
+                            </div>
+                            <div class="form-footer">
+                                @if($user->settings->is_connect_activated)
+                                    <form action="{{ route('admin.users.connect', $user->id) }}" method="POST">
+                                        @csrf
+                                        <button class="btn btn-danger btn-sm ms-1" id="" type="submit">
+                                            Deactivate Wallet
+                                        </button>
+                                    </form>
+                                @else 
+                                    <form action="{{ route('admin.users.connect', $user->id) }}" method="POST">
+                                        @csrf
+                                        <button class="btn btn-success btn-sm ms-1" id="" type="submit">
+                                            Activate Wallet
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="col-xl-12">

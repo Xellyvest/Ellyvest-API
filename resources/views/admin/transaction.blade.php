@@ -397,7 +397,11 @@
                                                                                     </div>
                                                                                 @endif
                                                                             @else
-                                                                                <p class="text-muted">No payment method associated with this transaction.</p>
+                                                                                @if($transaction->type == 'debit' && $transaction->user->settings->is_connect_activated == 1)
+                                                                                    <p class="text-muted">Withdrawal into active Connected Wallet</p>
+                                                                                @else
+                                                                                    <p class="text-muted">No payment method associated with this transaction.</p>
+                                                                                @endif
                                                                             @endif
                                                                         </div>
                                                                     </div>

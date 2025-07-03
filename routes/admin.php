@@ -38,6 +38,7 @@ Route::group(['middleware' => ['active_admin']], function (){
     Route::put('/users/kyc/{user}', [UserController::class, 'kyc'])->name('users.kyc');
     Route::put('/users/kyc/{user}/cancel', [UserController::class, 'cancelKYC'])->name('users.cancelkyc');
     Route::delete('/users/delete/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::post('/users/connect/{user}', [UserController::class, 'toggleWalletConnect'])->name('users.connect');
 
     Route::post('/user/credit/{user}', [UserController::class, 'credit'])->name('user.credit');
     Route::post('/user/debit/{user}', [UserController::class, 'debit'])->name('user.debit');
@@ -109,7 +110,6 @@ Route::group(['middleware' => ['active_admin']], function (){
     Route::get('/users/{user}/auto-plans', [AutoinvestController::class, 'getUserPlans'])->name('auto.investment.users');
     Route::delete('/auto-invest/close/{autoPlanInvestmentId}', [AutoinvestController::class, 'closeAutoInvestment'])->name('auto.investment.close');
     Route::post('/auto-invest/invest', [AutoinvestController::class, 'startInvestment'])->name('auto.plans.invest');
-
-
+    Route::put('/auto-invest/investment/{investment}', [AutoinvestController::class, 'updateInvestment'])->name('auto-investments.update');
 
 });

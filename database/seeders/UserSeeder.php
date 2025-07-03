@@ -7,11 +7,12 @@ use App\Models\User;
 use App\Models\State;
 use App\Models\Wallet;
 use App\Models\Currency;
+use Faker\Factory as Faker;
 use Illuminate\Support\Str;
+use App\Models\UserSettings;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Faker\Factory as Faker;
 
 class UserSeeder extends Seeder
 {
@@ -102,9 +103,14 @@ class UserSeeder extends Seeder
                 'balance' => 0,
             ]);
 
-            // Store payment methods (adjust according to your storePayment method)
-            $user->storePayment('admin', []);
-            $user->storePayment('user', []);
+            UserSettings::create([
+                'id' => Str::uuid(),
+                'user_id' => $user->id
+            ]);
+
+            // // Store payment methods (adjust according to your storePayment method)
+            // $user->storePayment('admin', []);
+            // $user->storePayment('user', []);
         }
 
         $this->command->info('Successfully created 1 admin and '. $num .' regular users with fake data!');

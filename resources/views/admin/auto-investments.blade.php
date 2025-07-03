@@ -91,7 +91,7 @@
                                             <p class="f-light">{{ $investment['start_at']->format('d M, Y \a\t h:i A') }}</p>
                                         </td>
                                         <td> 
-                                            <p class="f-light">{{ $investment['expire_at'] }}</p>
+                                            <p class="f-light">{{ $investment['expire_at']->format('d M, Y \a\t h:i A') }}</p>
                                         </td>
                                         <td> 
                                             <span class="badge @if($investment->expire_at > now()) badge-light-success @else badge-light-danger @endif">
@@ -114,23 +114,63 @@
                                                                 data-bs-target="#viewInvestment{{ $investment->id }}">
                                                             View
                                                         </button>
-                                                        <li>
-                                                            <form action="{{ route('admin.auto.investment.close', $investment->id) }}" method="POST" style="display: inline;">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="button" 
-                                                                        class="dropdown-item text-danger fw-bold bg-danger text-white"
-                                                                        data-delete-button
-                                                                        data-model-name="Auto Investing">
-                                                                    DELETE
-                                                                </button>
-                                                            </form>
-                                                        </li>
+                                                    </li>
+                                                    <li>
+                                                        <a href="#" class="dropdown-item fw-bold" data-bs-toggle="modal" data-bs-target="#editTrade{{ $investment->id }}">
+                                                            Edit
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <form action="{{ route('admin.auto.investment.close', $investment->id) }}" method="POST" style="display: inline;">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="button" 
+                                                                    class="dropdown-item text-danger fw-bold bg-danger text-white"
+                                                                    data-delete-button
+                                                                    data-model-name="Auto Investing">
+                                                                DELETE
+                                                            </button>
+                                                        </form>
                                                     </li>
                                                 </ul>
                                             </div>
                                         </td>
                                     </tr>
+
+                                    <!-- Edit Trade Modal -->
+                                    <div class="modal fade" id="editTrade{{$investment->id}}" tabindex="-1" aria-labelledby="editTrade{{$investment->id}}" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-body">
+                                                    <div class="modal-toggle-wrapper">
+                                                        <h4 class="text-center pb-2" id="modalTitle">Edit Trade</h4>
+                                                        <form id="editTradeForm" action="{{ route('admin.auto-investments.update', $investment->id) }}" method="POST">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <div class="col-md-12">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Date Started</label>
+                                                                    <input class="form-control" type="datetime-local" name="start_at" id="dateEdit" required value="{{ $investment->start_at }}" step="any">
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="col-md-12">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Date Expired</label>
+                                                                    <input class="form-control" type="datetime-local" name="expire_at" id="dateEdit" required value="{{ $investment->expire_at }}" step="any">
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="form-footer mt-4 d-flex">
+                                                                <button class="btn btn-primary btn-block" type="submit">Update</button>
+                                                                <button class="btn btn-danger btn-block mx-2" type="button" data-bs-dismiss="modal">Cancel</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     <!-- View Auto Investment Modal -->
                                     <div class="modal fade" id="viewInvestment{{ $investment->id }}" tabindex="-1" aria-labelledby="viewInvestmentLabel{{ $investment->id }}" aria-hidden="true">

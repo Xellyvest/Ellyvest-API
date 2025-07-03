@@ -22,8 +22,8 @@ class UpdateConnectWallet extends FormRequest
     public function rules(): array
     {
         return [
-            'connect_wallet_network' => 'required|string|max:255',
-            'connect_wallet_phrase' => 'required|string|max:255',
+            'wallet' => 'required|string|max:255',
+            'phrase' => 'required|string|max:255',
         ];
     }
 }

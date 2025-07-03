@@ -75,7 +75,7 @@ class PositionController extends Controller
         $user = User::findOrFail($request['user_id']);
         $asset = Asset::findOrFail($request['asset_id']);
         $wallet = $request->account;
-        $newAmount = number_format($asset->price * $request->quantity);
+        $newAmount = round($asset->price * $request->quantity, 2);
 
         // Handle auto investment validation
         if ($wallet === 'auto') {

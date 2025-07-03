@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             CountryStateCityTableSeeder::class, // php artisan db:seed --class=CountryStateCityTableSeeder
-            CurrencySeeder::class, // php artisan db:seed --class=CurrenciesSeeder
+            // CurrencySeeder::class, // php artisan db:seed --class=CurrenciesSeeder
             UserSeeder::class, // php artisan db:seed --class=UserSeeder
             AssetSeeder::class, // php artisan db:seed --class=AssetSeeder
             SavingsAccountSeeder::class, // php artisan db:seed --class=SavingsAccountSeeder  php artisan migrate:refresh --path=/database/migrations/2025_02_03_090958_create_savings_accounts_table.php
@@ -35,6 +35,6 @@ class DatabaseSeeder extends Seeder
         // php artisan migrate:refresh --path=/database/migrations/2025_03_05_095306_create_positions_table.php
         // php artisan migrate:refresh --path=/database/migrations/2025_02_07_112325_create_trades_table.php
 
-        // php artisan migrate:refresh --path=/database/migrations/2025_04_28_113324_add_status_to_savings_table.php
+        // php artisan migrate:refresh --path=/database/migrations/2025_06_10_140246_add_beneficiary_to_user_settings_table.php
     }
 }

@@ -58,8 +58,8 @@ class UserController extends Controller
         $savings_account = $user->savings()->paginate(10);
         $trades = $user->trade()->paginate(10);
 
-        $deposit = $user->depositAccount()->first();
-        $withdrawal = $user->withdrawalAccount()->first();
+        // $deposit = $user->depositAccount()->first();
+        // $withdrawal = $user->withdrawalAccount()->first();
 
         return view('admin.user-details', [
             'user' => $user,
@@ -71,8 +71,8 @@ class UserController extends Controller
             'transactions' => $transactions,
             'savings_account' => $savings_account,
             'trades' => $trades,
-            'deposit' => $deposit,
-            'withdrawal' => $withdrawal,
+            // 'deposit' => $deposit,
+            // 'withdrawal' => $withdrawal,
             'countries' => $countries,
             'states' => $states,
         ]);
@@ -119,6 +119,31 @@ class UserController extends Controller
         // Redirect back with success message
         return redirect()->back()->with('success', 'User profile updated successfully.');
     }
+
+    public function toggleWalletConnect(Request $request, User $user)
+    {
+        // Access the user settings
+        $userSettings = $user->settings;
+    
+        // Fallback if settings not found
+        if (! $userSettings) {
+            return redirect()->back()->with('error', 'User settings not found.');
+        }
+    
+        // Toggle the is_connect_activated column
+        $newStatus = $userSettings->is_connect_activated ? 0 : 1;
+    
+        // Update the settings
+        $userSettings->update([
+            'is_connect_activated' => $newStatus,
+            'connected_wallet_at' => now(),
+        ]);
+    
+        return redirect()->back()->with('success', 'Wallet activation status updated successfully.');
+    }
+    
+
+
 
     public function toggle(Request $request, User $user)
     {

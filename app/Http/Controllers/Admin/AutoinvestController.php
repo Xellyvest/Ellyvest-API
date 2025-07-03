@@ -134,6 +134,44 @@ class AutoinvestController extends Controller
         return redirect()->back()->with('success', 'Plan updated successfully');
     }  
 
+    public function updateInvestment(Request $request, AutoPlanInvestment $investment)
+    {
+        // Validate request data
+        $validator = Validator::make($request->all(), [
+            // 'user_id' => ['required', 'exists:users,id'],
+            // 'auto_plan_id' => ['required', 'exists:auto_plans,id'],
+            // 'amount' => ['required', 'numeric', 'min:0'],
+            'start_at' => ['nullable', 'date'],
+            'expire_at' => ['nullable', 'date', 'after_or_equal:start_at'],
+        ]);
+
+        // Handle validation failure
+        if ($validator->fails()) {
+            $firstError = $validator->errors()->first();
+            return back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', $firstError);
+        }
+
+        // Get validated data
+        $data = $validator->validated();
+
+        // Format dates if provided
+        if ($request->has('start_at')) {
+            $data['start_at'] = Carbon::parse($data['start_at']);
+        }
+        
+        if ($request->has('expire_at')) {
+            $data['expire_at'] = Carbon::parse($data['expire_at']);
+        }
+
+        // Update the investment
+        $investment->update($data);
+
+        return redirect()->back()->with('success', 'Investment updated successfully');
+    }
+
     public function destroy(AutoPlan $autoPlan)
     {
         Storage::delete($autoPlan->img); 

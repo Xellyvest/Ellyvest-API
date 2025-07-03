@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->uuid('user_id');
             $table->uuid('asset_id');
-            $table->enum('asset_type', ['crypto', 'stocks']);
+            $table->enum('asset_type', ['crypto', 'stocks', 'etf']);
             $table->enum('type', ['buy', 'sell']);
             $table->decimal('price', 18, 2)->default(0);
             $table->decimal('quantity', 18, 6)->default(0);

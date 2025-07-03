@@ -151,9 +151,7 @@
                             <!-- Pagination Links -->
                             <div class="jsgrid-pager my-3 mx-2">
                                 Pages:
-                                {{ $users->appends(['search' => request('search')])->links() }}
-
-                                @if ($users->onFirstPage())
+                                @if ($transactions->onFirstPage())
                                     <span class="jsgrid-pager-nav-button jsgrid-pager-nav-inactive-button">
                                         <a href="javascript:void(0);">First</a>
                                     </span>
@@ -162,16 +160,16 @@
                                     </span>
                                 @else
                                     <span class="jsgrid-pager-nav-button">
-                                        <a href="{{ $users->url(1) }}">First</a>
+                                        <a href="{{ $transactions->url(1) }}">First</a>
                                     </span>
                                     <span class="jsgrid-pager-nav-button">
-                                        <a href="{{ $users->previousPageUrl() }}">Prev</a>
+                                        <a href="{{ $transactions->previousPageUrl() }}">Prev</a>
                                     </span>
                                 @endif
 
                                 <!-- Page Numbers -->
-                                @foreach ($users->getUrlRange(1, $users->lastPage()) as $page => $url)
-                                    @if ($page == $users->currentPage())
+                                @foreach ($transactions->getUrlRange(1, $transactions->lastPage()) as $page => $url)
+                                    @if ($page == $transactions->currentPage())
                                         <span class="jsgrid-pager-page jsgrid-pager-current-page">{{ $page }}</span>
                                     @else
                                         <span class="jsgrid-pager-page">
@@ -180,12 +178,12 @@
                                     @endif
                                 @endforeach
 
-                                @if ($users->hasMorePages())
+                                @if ($transactions->hasMorePages())
                                     <span class="jsgrid-pager-nav-button">
-                                        <a href="{{ $users->nextPageUrl() }}" class="fw-bold">Next</a>
+                                        <a href="{{ $transactions->nextPageUrl() }}" class="fw-bold">Next</a>
                                     </span>
                                     <span class="jsgrid-pager-nav-button">
-                                        <a href="{{ $users->url($users->lastPage()) }}" class="fw-bold">Last</a>
+                                        <a href="{{ $transactions->url($transactions->lastPage()) }}" class="fw-bold">Last</a>
                                     </span>
                                 @else
                                     <span class="jsgrid-pager-nav-button jsgrid-pager-nav-inactive-button">
@@ -196,7 +194,7 @@
                                     </span>
                                 @endif
 
-                                &nbsp;&nbsp; {{ $users->currentPage() }} of {{ $users->lastPage() }}
+                                &nbsp;&nbsp; {{ $transactions->currentPage() }} of {{ $transactions->lastPage() }}
                             </div>
                         </div>
                     </div>

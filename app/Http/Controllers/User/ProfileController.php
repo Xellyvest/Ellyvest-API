@@ -218,7 +218,7 @@ class ProfileController extends Controller
             $debitSavings = (clone $savingsQuery)->where('type', 'debit')->sum('amount');
             $totalSavings = $creditSavings - $debitSavings;
 
-            $total_investing = $calculateTotalValue('brokerage') + $calculateTotalAutoValue('auto');
+            $total_investing = $calculateTotalValue('brokerage') + $calculateTotalValue('auto');
             $total_networth = $user->wallet->getBalance('wallet') + $total_investing + $totalSavings;
 
             // Build wallet response

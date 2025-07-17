@@ -154,15 +154,30 @@ class ProfileController extends Controller
                 return $user->wallet->getBalance($accountType) + $totalPositionsValue;
             };
 
-            // Helper function to calculate total value for brokerage and auto accounts
             $calculateTotalAutoValue = function ($accountType) use ($user) {
                 // Fetch open positions for the account
                 $investment = AutoPlanInvestment::where('user_id', $user->id)
                     ->where('expire_at', '>', now())
                     ->sum('amount');
-
-                // Total value = balance + positions value
-                return $user->wallet->getBalance($accountType) + $investment;
+            
+                // Get all active auto plan investments
+                $autoInvestments = AutoPlanInvestment::where('user_id', $user->id)
+                    ->where('expire_at', '>', now())
+                    ->with('positions.asset')
+                    ->get();
+            
+                // Calculate total value of all positions connected to auto investments
+                $positionsValue = 0;
+                foreach ($autoInvestments as $autoInvestment) {
+                    foreach ($autoInvestment->positions as $position) {
+                        if ($position->asset) { // Check if asset relation exists
+                            $positionsValue += ($position->quantity * $position->asset->price) + $position->extra;
+                        }
+                    }
+                }
+            
+                // Total value = balance + investments + positions value
+                return $user->wallet->getBalance($accountType) + $investment + $positionsValue;
             };
 
             // TEST:::: Helper function to calculate 24hr P&L and percentage change for brokerage and auto accounts

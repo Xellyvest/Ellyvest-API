@@ -16,6 +16,7 @@ class Trade extends Model
         'user_id',
         'asset_id',
         'asset_type',
+        'auto_plan_investment_id',
         'account',
         'type',
         'price',

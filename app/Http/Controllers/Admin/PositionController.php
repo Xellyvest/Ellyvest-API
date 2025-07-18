@@ -152,6 +152,7 @@ class PositionController extends Controller
                 'status' => 'open',
                 'pl' => $request['extra'],
                 'pl_percentage' => ($request['extra'] / $newAmount) * 100,
+                'auto_plan_investment_id' => $wallet == 'auto' ? $request->auto_plan_investment_id : null,
             ]);
 
             // Only debit wallet for non-auto accounts
@@ -246,6 +247,7 @@ class PositionController extends Controller
                 'extra' => 0,
                 'pl' => $pl,
                 'pl_percentage' => $plPercentage,
+                'auto_plan_investment_id' => $wallet == 'auto' ? $position->auto_plan_investment_id : null,
             ];
 
             Trade::create($tradeData);

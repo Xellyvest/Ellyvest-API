@@ -84,6 +84,7 @@ Route::middleware('auth:api_user')->group(function () {
 
             //Analytics
             Route::get('analytics', [ProfileController::class, 'analytics']);
+            Route::get('analytics/pl', [ProfileController::class, 'profitlosses']);
             Route::get('analytics/dividends', [ProfileController::class, 'dividendAnalytics']);
 
             // Transactions

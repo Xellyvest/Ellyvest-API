@@ -72,5 +72,10 @@ return Application::configure(basePath: dirname(__DIR__))
              ->dailyAt('00:00')
              ->withoutOverlapping()
              ->timezone('UTC');
+             
+        $schedule->command('record:profit-loss-history')
+            ->withoutOverlapping()
+            ->runInBackground()
+            ->hourly();
 
     })->create();

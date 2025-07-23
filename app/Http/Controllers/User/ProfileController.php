@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers\User;
 
+use Carbon\Carbon;
 use App\Models\Admin;
 use App\Models\Trade;
 use App\Models\Position;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\SavingsLedger;
+use App\Models\ProfitLossHistory;
 use App\Models\AutoPlanInvestment;
 use App\Http\Controllers\Controller;
 use App\Services\User\AnalyticsService;
 use App\Services\User\UserProfileService;
+use App\Http\Requests\User\UpdateSettings;
 use App\Services\User\ProfileTwoFaService;
 use App\Services\User\ProfilePasswordService;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,11 +22,11 @@ use App\Http\Requests\User\UpdateConnectWallet;
 use App\Http\Controllers\NotificationController;
 use App\Http\Requests\User\ProfileUpdateRequest;
 use App\Http\Requests\User\UpdateUserKycRequest;
+use App\Console\Commands\RecordProfitLossHistory;
 use App\DataTransferObjects\Models\UserModelData;
 use App\Http\Requests\User\UpdatePasswordRequest;
 use MarcinOrlowski\ResponseBuilder\ResponseBuilder;
 use App\Http\Requests\User\Profile\DeleteProfileRequest;
-use App\Http\Requests\User\UpdateSettings;
 
 class ProfileController extends Controller
 {
@@ -228,6 +231,35 @@ class ProfileController extends Controller
                 ];
             };
 
+            // $calculate24hrPLForPositions = function ($accountType) use ($user) {
+            //     // Get all records from the last 24 hours
+            //     $twentyFourHoursAgo = now()->subHours(24);
+                
+            //     $records = ProfitLossHistory::where('user_id', $user->id)
+            //         ->where('recorded_at', '>=', $twentyFourHoursAgo)
+            //         ->orderBy('recorded_at', 'asc')
+            //         ->get();
+                
+            //     // Calculate the sum of all values in the last 24 hours
+            //     $sum24hr = $records->sum(function($record) use ($accountType) {
+            //         return $accountType === 'brokerage' 
+            //             ? (float)$record->brokerage_value 
+            //             : (float)$record->auto_value;
+            //     });
+                
+            //     // Get the balance from the wallet
+            //     $balance = $user->wallet ? $user->wallet->getBalance($accountType) : 0;
+                
+            //     // Calculate percentage change (using balance as baseline)
+            //     $percentageChange = $balance != 0 ? ($sum24hr / $balance) * 100 : 0;
+                
+            //     return [
+            //         '24hr_pl' => number_format($sum24hr, 2),
+            //         '24hr_pl_percentage' => number_format($percentageChange, 2),
+            //     ];
+            // };
+            
+
             $savingsQuery = SavingsLedger::where('user_id', $user->id);
             $creditSavings = (clone $savingsQuery)->where('type', 'credit')->sum('amount');
             $debitSavings = (clone $savingsQuery)->where('type', 'debit')->sum('amount');
@@ -342,6 +374,156 @@ class ProfileController extends Controller
                 ->withMessage($e->getMessage())
                 ->build();
         }
+    }
+
+    public function profitlosses(Request $request)
+    {
+        $user = $request->user();
+        $range = $request->input('timeframe', '24h'); 
+        $type = $request->input('type', 'total_value'); // wallet_value, brokerage_value, auto_value, savings_value, total_value
+        
+        // Get current values first
+        $values = (new RecordProfitLossHistory())->calculateUserValues($user);
+        $now = now();
+        $currentValues = [
+            'wallet_value' => (float)number_format($values['wallet'], 2, '.', ''),
+            'brokerage_value' => (float)number_format($values['brokerage'], 2, '.', ''),
+            'auto_value' => (float)number_format($values['auto'], 2, '.', ''),
+            'savings_value' => (float)number_format($values['savings'], 2, '.', ''),
+            'total_value' => (float)number_format($values['total'], 2, '.', ''),
+            'recorded_at' => $now->format('Y-m-d\TH:i:s'),
+        ];
+    
+        // Initialize chart data
+        $chartData = [];
+        
+        switch ($range) {
+            case '1d':
+                // Last 24 hours (24 data points)
+                $startTime = now()->subHours(24);
+                
+                // Get all records from last 24 hours grouped by hour
+                $records = ProfitLossHistory::where('user_id', $user->id)
+                    ->where('recorded_at', '>=', $startTime)
+                    ->orderBy('recorded_at', 'asc')
+                    ->get()
+                    ->groupBy(function($record) {
+                        return Carbon::parse($record->recorded_at)->format('Y-m-d H:00:00');
+                    });
+
+                    logger($records);
+                
+                // Create 24 slots (one per hour)
+                for ($i = 0; $i < 24; $i++) {
+                    $hour = $startTime->copy()->addHours($i);
+                    $hourStr = $hour->format('Y-m-d H:00:00');
+                    
+                    // Get records for this hour
+                    $hourRecords = $records[$hourStr] ?? collect();
+                    
+                    // Calculate total for the hour (sum all records in that hour)
+                    $total = $hourRecords->sum($type);
+                    $chartData[$hourStr] = (float)number_format($total, 2, '.', '');
+                }
+                break;
+    
+            case '7d':
+                // Last 7 days (7 data points)
+                $startDate = now()->subDays(6)->startOfDay(); // 7 days including today
+                
+                // Get all records from last 7 days grouped by day
+                $records = ProfitLossHistory::where('user_id', $user->id)
+                    ->where('recorded_at', '>=', $startDate)
+                    ->orderBy('recorded_at', 'asc')
+                    ->get()
+                    ->groupBy(function($record) {
+                        return Carbon::parse($record->recorded_at)->format('Y-m-d');
+                    });
+                
+                // Create 7 slots (one per day)
+                for ($i = 0; $i < 7; $i++) {
+                    $day = $startDate->copy()->addDays($i);
+                    $dayStr = $day->format('Y-m-d 00:00:00');
+                    $dayKey = $day->format('Y-m-d');
+                    
+                    // Get records for this day
+                    $dayRecords = $records[$dayKey] ?? collect();
+                    
+                    // Calculate total for the day (sum all records in that day)
+                    $total = $dayRecords->sum($type);
+                    $chartData[$dayStr] = (float)number_format($total, 2, '.', '');
+                }
+                break;
+    
+            case '30d':
+                // Last 30 days (30 data points)
+                $startDate = now()->subDays(29)->startOfDay(); // 30 days including today
+                
+                // Get all records from last 30 days grouped by day
+                $records = ProfitLossHistory::where('user_id', $user->id)
+                    ->where('recorded_at', '>=', $startDate)
+                    ->orderBy('recorded_at', 'asc')
+                    ->get()
+                    ->groupBy(function($record) {
+                        return Carbon::parse($record->recorded_at)->format('Y-m-d');
+                    });
+                
+                // Create 30 slots (one per day)
+                for ($i = 0; $i < 30; $i++) {
+                    $day = $startDate->copy()->addDays($i);
+                    $dayStr = $day->format('Y-m-d 00:00:00');
+                    $dayKey = $day->format('Y-m-d');
+                    
+                    // Get records for this day
+                    $dayRecords = $records[$dayKey] ?? collect();
+                    
+                    // Calculate total for the day (sum all records in that day)
+                    $total = $dayRecords->sum($type);
+                    $chartData[$dayStr] = (float)number_format($total, 2, '.', '');
+                }
+                break;
+    
+            case '1yr':
+                // Last 12 months (12 data points)
+                $startDate = now()->subMonths(11)->startOfMonth(); // 12 months including current
+                
+                // Get all records from last 12 months grouped by month
+                $records = ProfitLossHistory::where('user_id', $user->id)
+                    ->where('recorded_at', '>=', $startDate)
+                    ->orderBy('recorded_at', 'asc')
+                    ->get()
+                    ->groupBy(function($record) {
+                        return Carbon::parse($record->recorded_at)->format('Y-m');
+                    });
+                
+                // Create 12 slots (one per month)
+                for ($i = 0; $i < 12; $i++) {
+                    $month = $startDate->copy()->addMonths($i);
+                    $monthStr = $month->format('Y-m-01 00:00:00');
+                    $monthKey = $month->format('Y-m');
+                    
+                    // Get records for this month
+                    $monthRecords = $records[$monthKey] ?? collect();
+                    
+                    // Calculate total for the month (sum all records in that month)
+                    $total = $monthRecords->sum($type);
+                    $chartData[$monthStr] = (float)number_format($total, 2, '.', '');
+                }
+                break;
+    
+            default:
+                // Default to 24 hours if invalid range
+                $range = '1d';
+                return $this->profitlosses($request->merge(['timeframe' => '1d']));
+        }
+    
+        return ResponseBuilder::asSuccess()
+            ->withMessage('Profit & losses fetched successfully')
+            ->withData([
+                'current_data' => $currentValues,
+                'chart_data' => $chartData
+            ])
+            ->build();
     }
 
     public function dividendAnalytics(Request $request)

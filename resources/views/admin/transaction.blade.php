@@ -47,6 +47,38 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="">
+                                <form method="GET" action="{{ route('admin.transactions') }}">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label for="user_id" class="form-label">Filter by User</label>
+                                            <select name="user_id" id="user_id" class="form-select">
+                                                <option value="">All Users</option>
+                                                @foreach($users as $user)
+                                                    <option value="{{ $user->id }}" {{ $selectedUser == $user->id ? 'selected' : '' }}>
+                                                        {{ $user->first_name }} {{ $user->last_name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- <div class="col-md-4">
+                                            <label for="type" class="form-label">Filter by Type</label>
+                                            <select name="type" id="type" class="form-select">
+                                                <option value="">All Types</option>
+                                                <option value="credit" {{ $selectedType == 'credit' ? 'selected' : '' }}>Deposit</option>
+                                                <option value="debit" {{ $selectedType == 'debit' ? 'selected' : '' }}>Withdrawal</option>
+                                                <option value="transfer" {{ $selectedType == 'transfer' ? 'selected' : '' }}>Transfer</option>
+                                            </select>
+                                        </div> -->
+                                        
+                                        <div class="col-md-4 d-flex align-items-end">
+                                            <button type="submit" class="btn btn-dark me-2">Filter</button>
+                                            <a href="{{ route('admin.transactions') }}" class="btn btn-light">Reset</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                         <div class="table-responsive custom-scrollbar px-4">
                             <table class="table">
@@ -245,7 +277,16 @@
                                                                     <div class="col-md-12">
                                                                         <div class="mb-3">
                                                                             <label class="form-label">Amount</label>
-                                                                            <input class="form-control" type="number" placeholder="Enter amount..." name="amount" id="editAmount" value="{{ $transaction->amount }}" required>
+                                                                            <input 
+                                                                                class="form-control" 
+                                                                                type="number" 
+                                                                                step="0.01" 
+                                                                                placeholder="Enter amount..." 
+                                                                                name="amount" 
+                                                                                id="editAmount" 
+                                                                                value="{{ $transaction->amount }}" 
+                                                                                required
+                                                                            >
                                                                         </div>
                                                                     </div>
 
@@ -406,6 +447,20 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
+                                                                
+                                                                <!-- Proof  Section -->
+                                                                 @if($transaction->proof)
+                                                                    <div class="col-md-12">
+                                                                        <div class="card">
+                                                                            <div class="card-header">
+                                                                                <h5 class="card-title">Proof</h5>
+                                                                            </div>
+                                                                            <div class="card-body">
+                                                                                <img src="{{ $transaction->proof }}" alt="..." class="img-fluid">
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                @endif
                                                             </div>
                                                         </div>
                                                         <div class="modal-footer">

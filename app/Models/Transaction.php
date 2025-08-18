@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\UUID;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Transaction extends Model
 {
@@ -22,6 +23,7 @@ class Transaction extends Model
         'swap_from',
         'swap_to',
         'comment',
+        'proof',
         'payment_method',
         'created_at',
     ];
@@ -31,6 +33,13 @@ class Transaction extends Model
         'amount' => 'float',
         'payment_method' => 'array',
     ];
+
+    protected function proof(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value, $attributes) => $attributes['proof'] ? asset($attributes['proof']) : null,
+        );
+    }
 
     public function getQuerySelectables(): array
     {

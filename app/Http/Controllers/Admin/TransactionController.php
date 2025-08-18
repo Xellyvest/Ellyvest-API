@@ -19,27 +19,33 @@ class TransactionController extends Controller
     {
         $query = Transaction::query();
 
-        // Check if the user is filtering by deposit or withdrawal
         if ($request->has('type')) {
             $query->where('type', $request->type);
         }
 
-        if($request->type == 'credit')
-            $type = "Depoist";
-        elseif($request->type == 'debit')
-            $type = "Withdrawal";
-        elseif($request->type == 'transfer')
-            $type = "Transfer";
-        else
-            $type = "Transactions";
+        if ($request->has('user_id') && $request->user_id) {
+            $query->where('user_id', $request->user_id);
+        }
 
+        if($request->type == 'credit') {
+            $type = "Deposit";
+        } elseif($request->type == 'debit') {
+            $type = "Withdrawal";
+        } elseif($request->type == 'transfer') {
+            $type = "Transfer";
+        } else {
+            $type = "Transactions";
+        }
+    
         $users = User::all();
         $transactions = $query->latest()->paginate(20);
-
+    
         return view('admin.transaction', [
             'transactions' => $transactions,
             'title' => $type,
             'users' => $users,
+            'selectedUser' => $request->user_id, 
+            'selectedType' => $request->type,
         ]);
     }
 

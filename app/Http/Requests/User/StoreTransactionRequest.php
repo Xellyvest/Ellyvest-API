@@ -25,15 +25,24 @@ class StoreTransactionRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        $rules = [
             'amount' => ['required', 'numeric', 'min:0.01'],
-            'method' => ['nullable', Rule::in(['wallet', 'save', 'trade'])], // Defaults to 'wallet'
+            'method' => ['nullable', Rule::in(['wallet', 'save', 'trade'])],
             'type' => ['required', Rule::in(['credit', 'debit', 'transfer'])],
             'comment' => ['nullable', 'string', 'max:255'],
             'to' => ['sometimes', Rule::in(['wallet', 'cash', 'brokerage', 'auto', 'ira'])],
             'from' => ['sometimes', Rule::in(['wallet', 'cash', 'brokerage', 'auto', 'ira'])],
             'payment_method_id' => ['nullable', 'uuid', 'exists:payment_methods,id']
         ];
+    
+        // Add proof validation for bank deposits
+        if ($this->type === 'credit' && 
+            (str_contains(strtolower($this->comment), 'bank') || 
+             str_contains(strtolower($this->comment), 'deposit'))) {
+            $rules['proof'] = ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'];
+        }
+    
+        return $rules;
     }
 
     protected function prepareForValidation()

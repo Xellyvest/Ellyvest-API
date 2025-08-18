@@ -18,6 +18,7 @@ class Position extends Model
         'asset_type',
         'account',
         'auto_plan_investment_id',
+        'savings_id',
         'price',
         'quantity',
         'amount',
@@ -57,5 +58,15 @@ class Position extends Model
     public function asset()
     {
         return $this->belongsTo(Asset::class);
+    }
+
+    public function savings()
+    {
+        return $this->belongsTo(Savings::class);
+    }
+
+    public function autoInvest()
+    {
+        return $this->belongsTo(AutoPlanInvestment::class, 'auto_plan_investment_id');
     }
 }

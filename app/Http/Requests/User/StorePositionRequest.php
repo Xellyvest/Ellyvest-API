@@ -31,7 +31,8 @@ class StorePositionRequest extends FormRequest
             'interval'   => 'nullable|string',
             'tp'         => 'nullable|string',
             'sl'         => 'nullable|string',
-            'wallet' => 'required|in:auto,brokerage',
+            'wallet' => 'required|in:auto,brokerage,savings',
+            'savings_id' => 'required_if:wallet,savings', 'exists:savings,id'
         ];
     }
 }

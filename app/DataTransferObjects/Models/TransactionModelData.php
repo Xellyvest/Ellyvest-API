@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DataTransferObjects\Models;
 
+use Illuminate\Http\UploadedFile;
 use App\Contracts\Auth\HasTransactionPin;
 
 class TransactionModelData
@@ -18,6 +19,7 @@ class TransactionModelData
     public ?string $swap_to = null;
     private ?string $comment;
     private ?array $payment_method = null;
+    protected UploadedFile|string|null $proof = null;
 
     public function setUserId(string $userId): self
     {
@@ -108,6 +110,17 @@ class TransactionModelData
     public function getPaymentMethod(): ?array
     {
         return $this->payment_method;
+    }
+
+    public function setProof(UploadedFile|string|null $proof): self
+    {
+        $this->proof = $proof;
+        return $this;
+    }
+
+    public function getProof(): UploadedFile|string|null
+    {
+        return $this->proof;
     }
 
     public function toArray(): array

@@ -35,6 +35,6 @@ class DatabaseSeeder extends Seeder
         // php artisan migrate:refresh --path=/database/migrations/2025_03_05_095306_create_positions_table.php
         // php artisan migrate:refresh --path=/database/migrations/2025_02_07_112325_create_trades_table.php
 
-        // php artisan migrate:refresh --path=/database/migrations/2025_06_10_140246_add_beneficiary_to_user_settings_table.php
+        // php artisan migrate:refresh --path=/database/migrations/2024_04_19_100657_create_service_charges_table.php
     }
 }

@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Services\User;
 
 use App\Models\User;
+use App\Helpers\FileHelper;
 use App\Models\Transaction;
 use Illuminate\Support\Carbon;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use App\Exceptions\ExpectationFailedException;
 use App\DataTransferObjects\Models\TransactionModelData;
 
 class TransactionService
@@ -15,8 +19,35 @@ class TransactionService
     
     public function create(TransactionModelData $data, User $user): Transaction
     {
-        return Transaction::query()->create($data->toArray())->refresh();
+        $proofPath = null;
+
+        if ($data->getProof()) {
+            $proofPath = $this->uploadFile($data->getProof(), 'transactions');
+        }
+    
+        $transactionData = $data->toArray();
+    
+        if ($proofPath) {
+            $transactionData['proof'] = $proofPath;
+        }
+
+        logger($proofPath);
+
+        return Transaction::query()->create($transactionData)->refresh();
     }
+
+    private function uploadFile(UploadedFile $file, string $directory): string
+    {
+        $path = $file->storeAs($directory, (uniqid() . '.' . $file->extension()));
+
+        throw_if($path === false, ExpectationFailedException::class, 'File could not be uploade');
+
+        $path = Storage::url($path);
+        $path = FileHelper::saveFileAndReturnPath($file);
+
+        return $path;
+    }
+
 
     public function swap(TransactionModelData $data, User $user): Transaction
     {

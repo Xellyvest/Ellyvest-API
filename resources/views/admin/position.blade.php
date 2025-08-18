@@ -49,6 +49,41 @@
                                     </a>
                                 </div>
                             </div>
+                            <div class="my-4">
+                                <div class="">
+                                    <form method="GET" action="{{ route('admin.positions') }}">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <label for="user_id" class="form-label">Filter by User</label>
+                                                <select name="user_id" id="user_id" class="form-select">
+                                                    <option value="">All Users</option>
+                                                    @foreach($users as $user)
+                                                        <option value="{{ $user->id }}" {{ $selectedUser == $user->id ? 'selected' : '' }}>
+                                                            {{ $user->first_name }} {{ $user->last_name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <label for="account" class="form-label">Filter by Account Type</label>
+                                                <select name="account" id="account" class="form-select">
+                                                    <option value="">All Accounts</option>
+                                                    <option value="wallet" {{ $selectedAccount == 'wallet' ? 'selected' : '' }}>Wallet</option>
+                                                    <option value="brokerage" {{ $selectedAccount == 'brokerage' ? 'selected' : '' }}>Brokerage</option>
+                                                    <option value="auto" {{ $selectedAccount == 'auto' ? 'selected' : '' }}>Auto</option>
+                                                    <option value="savings" {{ $selectedAccount == 'savings' ? 'selected' : '' }}>Savings</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="col-md-4 d-flex align-items-end">
+                                                <button type="submit" class="btn btn-dark me-2">Filter</button>
+                                                <a href="{{ route('admin.positions') }}" class="btn btn-light">Reset</a>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                         <div class="table-responsive custom-scrollbar px-4">
                             <table class="table">
@@ -60,6 +95,7 @@
                                     <th> <span class="f-light f-w-600">Amount </span></th>
                                     <th> <span class="f-light f-w-600">Quantity </span></th>
                                     <th> <span class="f-light f-w-600">Account</span></th>
+                                    <th> <span class="f-light f-w-600">Plan</span></th>
                                     <th> <span class="f-light f-w-600">Leverage</span></th>
                                     <th> <span class="f-light f-w-600">Dividends</span></th>
                                     <th> <span class="f-light f-w-600">P/L</span></th>
@@ -101,6 +137,15 @@
                                         </td>
                                         <td> 
                                             <p class="f-light fw-bold text-capitalize">{{ $trade->account }}</p>
+                                        </td>
+                                        <td> 
+                                            @if($trade->savings)
+                                                <a href="#" class="f-light fw-bold text-success">{{ $trade->savings->savingsAccount->name }}</a>
+                                            @elseif($trade->autoInvest)
+                                                <a href="#" class="f-light fw-bold text-success">{{ $trade->autoInvest->plan->name }}</a>
+                                            @else
+                                                <p class="f-light fw-bold">---</p>
+                                            @endif
                                         </td>
                                         <td> 
                                             <p class="f-light fw-bold">{{ $trade->leverage ? $trade->leverage : '1' }}x</p>
@@ -459,6 +504,7 @@
                                         <option value="wallet">Cash</option>
                                         <option value="brokerage">Brokerage</option>
                                         <option value="auto">Auto Investing</option>
+                                        <option value="savings">Savings Account</option>
                                     </select>
                                 </div>
                             </div>
@@ -470,6 +516,15 @@
                                     <select class="form-select" id="autoPlanSelect" name="auto_plan_investment_id">
                                         <option selected disabled value="">---- Select Plan ---</option>
                                         <!-- Options will be loaded via AJAX -->
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12" id="savingsAccountField" style="display: none;">
+                                <div class="mb-3">
+                                    <label class="form-label">Savings Account</label>
+                                    <select class="form-select" id="savingsAccountSelect" name="savings_account_id">
+                                        <option selected disabled value="">---- Select Savings Account ---</option>
                                     </select>
                                 </div>
                             </div>
@@ -552,6 +607,17 @@
                                 </div>
                             </div>
 
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label" for="checkbox1">Notify User</label>
+                                    <div class="form-check-size">
+                                        <div class="form-check form-switch form-check-inline">
+                                            <input class="form-check-input check-size" type="checkbox" role="switch" name="notify" >
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="form-footer mt-4 d-flex">
                                 <button class="btn btn-primary btn-block" type="submit">Submit</button>
                                 <button class="btn btn-danger btn-block mx-2" type="button" data-bs-dismiss="modal">Cancel</button>
@@ -564,85 +630,96 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const accountSelect = document.getElementById('addAccountSelect');
-            const autoPlanField = document.getElementById('autoPlanField');
-            const userSelect = document.getElementById('userSelect');
-            const autoPlanSelect = document.getElementById('autoPlanSelect');
+    document.addEventListener('DOMContentLoaded', function() {
+        const accountSelect = document.getElementById('addAccountSelect');
+        const autoPlanField = document.getElementById('autoPlanField');
+        const savingsAccountField = document.getElementById('savingsAccountField');
+        const userSelect = document.getElementById('userSelect');
+        const autoPlanSelect = document.getElementById('autoPlanSelect');
+        const savingsAccountSelect = document.getElementById('savingsAccountSelect');
 
-            let selectedUserId = null;
+        let selectedUserId = null;
 
-            // Show/hide auto plan field based on account selection
-            accountSelect.addEventListener('change', function() {
-                
-                if (this.value === 'auto') {
-                    autoPlanField.style.display = 'block';
-                    if (selectedUserId) {
-                        loadAutoPlans(selectedUserId);
-                    }
-                } else {
-                    autoPlanField.style.display = 'none';
-                }
-            });
-
-            userSelect.addEventListener('change', function() {
-                selectedUserId = this.value;
-                if (accountSelect.value === 'auto') {
-                    loadAutoPlans(selectedUserId);
-                }
-            });
-
-            const autoPlanRoute = "{{ route('admin.auto.investment.users', ['user' => 'USER_ID']) }}";
-
-            function loadAutoPlans(userId) {
-                const url = autoPlanRoute.replace('USER_ID', userId);
-                fetch(url)
-                    .then(response => response.json())
-                    .then(data => {
-                        autoPlanSelect.innerHTML = '<option selected disabled value="">---- Select Plan ---</option>';
-                        if (data.length > 0) {
-                            data.forEach(plan => {
-                                const option = document.createElement('option');
-                                option.value = plan.id;
-                                option.textContent = `${plan.plan.name} -- ${plan.balance}USD`;
-                                autoPlanSelect.appendChild(option);
-                            });
-                        } else {
-                            autoPlanSelect.innerHTML += '<option disabled>No plans found</option>';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error loading auto plans:', error);
-                        autoPlanSelect.innerHTML = '<option selected disabled value="">Error loading plans</option>';
-                    });
+        // Show/hide account-specific fields based on selection
+        accountSelect.addEventListener('change', function() {
+            autoPlanField.style.display = this.value === 'auto' ? 'block' : 'none';
+            savingsAccountField.style.display = this.value === 'savings' ? 'block' : 'none';
+            
+            if (selectedUserId && (this.value === 'auto' || this.value === 'savings')) {
+                loadAccountOptions(selectedUserId, this.value);
             }
-
-            // Asset price calculation logic
-            const assetSelect = document.getElementById('assetSelect');
-            const amountInput = document.getElementById('amountInput');
-            const quantityInput = document.getElementById('quantityInput');
-
-            // Calculate quantity when amount changes
-            amountInput.addEventListener('input', function() {
-                if (assetSelect.value && this.value) {
-                    const price = parseFloat(assetSelect.selectedOptions[0].dataset.price);
-                    const amount = parseFloat(this.value);
-                    quantityInput.value = (amount / price).toFixed(8);
-                }
-            });
-
-            // Calculate amount when quantity changes
-            quantityInput.addEventListener('input', function() {
-                if (assetSelect.value && this.value) {
-                    const price = parseFloat(assetSelect.selectedOptions[0].dataset.price);
-                    const quantity = parseFloat(this.value);
-                    amountInput.value = (quantity * price).toFixed(2);
-                }
-            });
         });
+
+        userSelect.addEventListener('change', function() {
+            selectedUserId = this.value;
+            if (accountSelect.value === 'auto' || accountSelect.value === 'savings') {
+                loadAccountOptions(selectedUserId, accountSelect.value);
+            }
+        });
+
+        function loadAccountOptions(userId, accountType) {
+            const route = accountType === 'auto' 
+                ? "{{ route('admin.auto.investment.users', ['user' => 'USER_ID']) }}"
+                : "{{ route('admin.account.savings.users', ['user' => 'USER_ID']) }}";
+
+            const url = route.replace('USER_ID', userId);
+            const selectElement = accountType === 'auto' ? autoPlanSelect : savingsAccountSelect;
+            const otherSelectElement = accountType === 'auto' ? savingsAccountSelect : autoPlanSelect;
+            
+            // Reset the other select
+            otherSelectElement.innerHTML = '<option selected disabled value="">---- Select ---</option>';
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    selectElement.innerHTML = '<option selected disabled value="">---- Select ---</option>';
+                    
+                    if (data.length > 0) {
+                        data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item.id;
+                            
+                            if (accountType === 'auto') {
+                                option.textContent = `${item.plan.name} -- ${item.balance}USD`;
+                            } else {
+                                option.textContent = `${item.savings_account.name} -- ${item.balance}USD`;
+                            }
+                            
+                            selectElement.appendChild(option);
+                        });
+                    } else {
+                        selectElement.innerHTML += '<option disabled>No accounts found</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error(`Error loading ${accountType} accounts:`, error);
+                    selectElement.innerHTML = '<option selected disabled value="">Error loading accounts</option>';
+                });
+        }
+
+        // Asset price calculation logic remains the same
+        const assetSelect = document.getElementById('assetSelect');
+        const amountInput = document.getElementById('amountInput');
+        const quantityInput = document.getElementById('quantityInput');
+
+        amountInput.addEventListener('input', function() {
+            if (assetSelect.value && this.value) {
+                const price = parseFloat(assetSelect.selectedOptions[0].dataset.price);
+                const amount = parseFloat(this.value);
+                quantityInput.value = (amount / price).toFixed(8);
+            }
+        });
+
+        quantityInput.addEventListener('input', function() {
+            if (assetSelect.value && this.value) {
+                const price = parseFloat(assetSelect.selectedOptions[0].dataset.price);
+                const quantity = parseFloat(this.value);
+                amountInput.value = (quantity * price).toFixed(2);
+            }
+        });
+    });
     </script>
     <!-- Credit Modal -->
-
 @endsection
 
 @section('scripts')

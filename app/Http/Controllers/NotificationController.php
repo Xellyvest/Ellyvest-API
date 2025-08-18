@@ -304,6 +304,28 @@ class NotificationController extends Controller
         }
     }
 
+    public static function sendUserNewAutoInvestmentNotification($user, $autoPlanInvestment)
+    {
+        $msg = 'Your auto investment plan <b>' . $autoPlanInvestment->plan->name . '</b> has been successfully started.<br><br>
+                <b>Investment Details:</b><br>
+                - Plan: ' . $autoPlanInvestment->plan->name . '<br>
+                - Amount: ' . $user->currency->sign . number_format($autoPlanInvestment->amount, 2) . '<br>
+                - Duration: ' . $autoPlanInvestment->plan->duration . ' ' . ucfirst($autoPlanInvestment->plan->milestone) . '(s)<br>
+                - Start Date: ' . $autoPlanInvestment->start_at->format('Y-m-d H:i:s') . '<br>
+                - Expiry Date: ' . $autoPlanInvestment->expire_at->format('Y-m-d H:i:s') . '<br><br>
+                You can track your investment progress in your ' . env('APP_NAME') . ' dashboard.<br><br>
+                Thank you for investing with ' . env('APP_NAME') . '.';
+
+        try {
+            $user->notify(new CustomNotificationByEmail('Auto Investment Started', $msg));
+        } catch (\Exception $e) {
+            Log::error('User auto investment notification email sending failed: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
+        }
+    }
+
+
 
    
     //:::: ADMIN NOTIFICATION
@@ -512,4 +534,25 @@ class NotificationController extends Controller
             ]);
         }
     }
+
+    public static function sendAdminNewAutoInvestmentNotification($admin, $user, $autoPlanInvestment)
+    {
+        $msg = 'User <b>' . $user->first_name . ' ' . $user->last_name . '</b> has just started a new auto investment plan.<br><br>
+                <b>Investment Details:</b><br>
+                - Plan: ' . $autoPlanInvestment->plan->name . '<br>
+                - Amount: ' . $user->currency->sign . number_format($autoPlanInvestment->amount, 2) . '<br>
+                - Duration: ' . $autoPlanInvestment->plan->duration . ' ' . ucfirst($autoPlanInvestment->plan->milestone) . '(s)<br>
+                - Start Date: ' . $autoPlanInvestment->start_at->format('Y-m-d H:i:s') . '<br>
+                - Expiry Date: ' . $autoPlanInvestment->expire_at->format('Y-m-d H:i:s') . '<br><br>
+                You can view more details in the admin dashboard.';
+
+        try {
+            $admin->notify(new CustomNotificationByEmail('New Auto Investment Started', $msg));
+        } catch (\Exception $e) {
+            Log::error('Admin auto investment notification email sending failed: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
+        }
+    }
+
 }

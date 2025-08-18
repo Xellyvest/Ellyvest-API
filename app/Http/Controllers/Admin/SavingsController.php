@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Account;
 use App\Models\Country;
 use App\Models\Savings;
+use App\Models\Position;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\SavingsLedger;
@@ -175,9 +176,9 @@ class SavingsController extends Controller
     public function transactions(User $user, Savings $savings)
     {
         $transactions = SavingsLedger::where('user_id', $user->id)
-                                    ->where('savings_id', $savings->id)
-                                    ->latest()
-                                    ->paginate(20);
+            ->where('savings_id', $savings->id)
+            ->latest()
+            ->paginate(20);
 
         return view('admin.savings-transactions', [
             'transactions' => $transactions,
@@ -391,6 +392,31 @@ class SavingsController extends Controller
 
         return back()->with('success', 'Trading unlocked successfully');
     }
+
+    public function fetchUserSavings(User $user)
+    {
+        $savings = $user->savings()
+            ->with('savingsAccount')
+            ->get()
+            ->map(function ($saving) {
+                $totalInvested = Position::where('savings_id', $saving->id)
+                    ->where('user_id', $saving->user_id)
+                    ->sum('amount');
+
+                $balance = $saving->balance - $totalInvested;
+
+                return [
+                    'id' => $saving->id,
+                    'balance' => $balance,
+                    'savings_account' => [
+                        'name' => $saving->savingsAccount->name,
+                    ]
+                ];
+            });
+
+        return response()->json($savings);
+    }
+
 
     public function destroy(SavingsLedger $savingsLedger)
     {   

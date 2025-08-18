@@ -7,6 +7,7 @@ use App\Models\Trade;
 use App\Models\Position;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\NotificationController as Notifications;
+use App\Models\User;
 
 class TradeService
 {
@@ -94,113 +95,207 @@ class TradeService
         return $trade;
     }
 
-    public function createPosition(array $data, $user)
+    // public function createPosition(array $data, $user)
+    // {
+    //     return DB::transaction(function () use ($data, $user) {
+    //         $wallet = $data['wallet'];
+
+    //         $asset = Asset::findOrFail($data['asset_id']);
+    //         $balance = $user->wallet->getBalance($wallet);
+    //         $newAmount = $asset->price * $data['quantity'];
+
+    //         // Check if user already has an open position for this asset
+    //         $existingPosition = Position::where('user_id', $user->id)
+    //             ->where('asset_id', $data['asset_id'])
+    //             ->where('status', 'open')
+    //             ->lockForUpdate() // Prevents race conditions
+    //             ->first();
+
+    //         if ($existingPosition) {
+    //             // If position exists, update quantity and amount
+    //             $newQuantity = $existingPosition->quantity + $data['quantity'];
+    //             $updatedAmount = $existingPosition->amount + $newAmount;
+
+    //             if ($balance < $newAmount) {
+    //                 abort(403, 'Insufficient balance to add more to this position.');
+    //             }
+
+    //             if ($newAmount < 1) {
+    //                 abort(403, 'Cannot open position, amount is less than 1.');
+    //             }
+
+    //             $existingPosition->update([
+    //                 'quantity' => $newQuantity,
+    //                 'amount' => $updatedAmount,
+    //             ]);
+
+    //              // Store trades as position transaction history
+    //             Trade::create([
+    //                 'user_id'     => $user->id,
+    //                 'asset_id'    => $data['asset_id'],
+    //                 'asset_type'  => $asset->type,
+    //                 'type'        => 'buy',
+    //                 'account'        => $data['wallet'],
+    //                 'price'       => $asset->price,
+    //                 'quantity'    => $data['quantity'],
+    //                 'amount'      => $newAmount,
+    //                 'status'      => 'open',
+    //                 'entry'       => $data['entry'] ?? null,
+    //                 'exit'        => $data['exit'] ?? null,
+    //                 'leverage'    => $data['leverage'] ?? 1,
+    //                 'interval'    => $data['interval'] ?? null,
+    //                 'tp'          => $data['tp'] ?? null,
+    //                 'sl'          => $data['sl'] ?? null,
+    //                 'extra'       => 0,
+    //             ]);
+
+    //             $user->wallet->debit($newAmount, $wallet, 'Added to an existing position');
+    //             // $user->storeTransaction($newAmount, $existingPosition->id, Position::class, 'debit', 'approved', "Added {$data['quantity']} units to {$asset->symbol} position", null, null, now());
+
+    //             return $existingPosition;
+    //         } else {
+    //             // Create a new position if none exists
+    //             if ($balance < $newAmount) {
+    //                 abort(403, 'Insufficient balance to open a new position.');
+    //             }
+
+    //             $trade = Position::create([
+    //                 'user_id'    => $user->id,
+    //                 'asset_id'   => $data['asset_id'],
+    //                 'asset_type' => $asset->type,
+    //                 'account'        => $data['wallet'],
+    //                 'price'      => $asset->price,
+    //                 'quantity'   => $data['quantity'],
+    //                 'amount'     => $newAmount,
+    //                 'status'     => $data['status'] ?? 'open',
+    //                 'entry'      => $data['entry'] ?? null,
+    //                 'exit'       => $data['exit'] ?? null,
+    //                 'leverage'   => $data['leverage'] ?? null,
+    //                 'interval'   => $data['interval'] ?? null,
+    //                 'tp'         => $data['tp'] ?? null,
+    //                 'sl'         => $data['sl'] ?? null,
+    //                 'extra'      => 0,
+    //             ]);
+
+    //             // Store trades as position transaction history
+    //             Trade::create([
+    //                 'user_id'     => $user->id,
+    //                 'asset_id'    => $data['asset_id'],
+    //                 'asset_type'  => $asset->type,
+    //                 'type'        => 'buy',
+    //                 'account'        => $data['wallet'],
+    //                 'price'       => $asset->price,
+    //                 'quantity'    => $data['quantity'],
+    //                 'amount'      => $newAmount,
+    //                 'status'      => 'open',
+    //                 'entry'       => $data['entry'] ?? null,
+    //                 'exit'        => $data['exit'] ?? null,
+    //                 'leverage'    => $data['leverage'] ?? null,
+    //                 'interval'    => $data['interval'] ?? null,
+    //                 'tp'          => $data['tp'] ?? null,
+    //                 'sl'          => $data['sl'] ?? null,
+    //                 'extra'       => 0,
+    //             ]);
+
+    //             $user->wallet->debit($newAmount, $wallet, 'Opened a new position');
+    //             // $user->storeTransaction($newAmount, $trade->id, Position::class, 'debit', 'approved', "Opened a new position on {$asset->symbol} with {$data['quantity']} units", null, null, now());
+
+    //             return $trade;
+    //         }
+    //     });
+    // }
+
+    public function createPosition(array $data, User $user)
     {
         return DB::transaction(function () use ($data, $user) {
-            $wallet = $data['wallet'];
-
             $asset = Asset::findOrFail($data['asset_id']);
-            $balance = $user->wallet->getBalance($wallet);
             $newAmount = $asset->price * $data['quantity'];
+            $accountType = $data['wallet']; // 'wallet' or 'savings'
+            $savingsId = $data['savings_id'] ?? null;
 
-            // Check if user already has an open position for this asset
+            // Validate based on account type
+            if ($accountType !== 'savings') {
+                $balance = $user->wallet->getBalance($data['wallet']);
+
+                if ($balance < $newAmount) {
+                    abort(403, 'Insufficient wallet balance to open position.');
+                }
+            } elseif ($accountType === 'savings' && $savingsId) {
+                $savings = $user->savings()->findOrFail($savingsId);
+                $totalInvested = Position::where('savings_id', $savings->id)
+                    ->where('user_id', $user->id)
+                    ->sum('amount');
+                
+                $availableBalance = $savings->balance - $totalInvested;
+                if ($availableBalance < $newAmount) {
+                    abort(403, 'Insufficient savings balance to open position.');
+                }
+            }
+
+            // Check for existing position (same asset and same account type)
             $existingPosition = Position::where('user_id', $user->id)
                 ->where('asset_id', $data['asset_id'])
+                ->where('account', $accountType)
+                ->when($accountType === 'savings', fn($q) => $q->where('savings_id', $savingsId))
                 ->where('status', 'open')
-                ->lockForUpdate() // Prevents race conditions
+                ->lockForUpdate()
                 ->first();
 
             if ($existingPosition) {
-                // If position exists, update quantity and amount
-                $newQuantity = $existingPosition->quantity + $data['quantity'];
-                $updatedAmount = $existingPosition->amount + $newAmount;
-
-                if ($balance < $newAmount) {
-                    abort(403, 'Insufficient balance to add more to this position.');
-                }
-
-                if ($newAmount < 1) {
-                    abort(403, 'Cannot open position, amount is less than 1.');
-                }
-
+                // Update existing position
                 $existingPosition->update([
-                    'quantity' => $newQuantity,
-                    'amount' => $updatedAmount,
+                    'quantity' => $existingPosition->quantity + $data['quantity'],
+                    'amount' => $existingPosition->amount + $newAmount,
                 ]);
-
-                 // Store trades as position transaction history
-                Trade::create([
-                    'user_id'     => $user->id,
-                    'asset_id'    => $data['asset_id'],
-                    'asset_type'  => $asset->type,
-                    'type'        => 'buy',
-                    'account'        => $data['wallet'],
-                    'price'       => $asset->price,
-                    'quantity'    => $data['quantity'],
-                    'amount'      => $newAmount,
-                    'status'      => 'open',
-                    'entry'       => $data['entry'] ?? null,
-                    'exit'        => $data['exit'] ?? null,
-                    'leverage'    => $data['leverage'] ?? 1,
-                    'interval'    => $data['interval'] ?? null,
-                    'tp'          => $data['tp'] ?? null,
-                    'sl'          => $data['sl'] ?? null,
-                    'extra'       => 0,
-                ]);
-
-                $user->wallet->debit($newAmount, $wallet, 'Added to an existing position');
-                // $user->storeTransaction($newAmount, $existingPosition->id, Position::class, 'debit', 'approved', "Added {$data['quantity']} units to {$asset->symbol} position", null, null, now());
-
-                return $existingPosition;
+                $position = $existingPosition;
             } else {
-                // Create a new position if none exists
-                if ($balance < $newAmount) {
-                    abort(403, 'Insufficient balance to open a new position.');
-                }
-
-                $trade = Position::create([
-                    'user_id'    => $user->id,
-                    'asset_id'   => $data['asset_id'],
+                // Create new position
+                $position = Position::create([
+                    'user_id' => $user->id,
+                    'asset_id' => $data['asset_id'],
                     'asset_type' => $asset->type,
-                    'account'        => $data['wallet'],
-                    'price'      => $asset->price,
-                    'quantity'   => $data['quantity'],
-                    'amount'     => $newAmount,
-                    'status'     => $data['status'] ?? 'open',
-                    'entry'      => $data['entry'] ?? null,
-                    'exit'       => $data['exit'] ?? null,
-                    'leverage'   => $data['leverage'] ?? null,
-                    'interval'   => $data['interval'] ?? null,
-                    'tp'         => $data['tp'] ?? null,
-                    'sl'         => $data['sl'] ?? null,
-                    'extra'      => 0,
+                    'account' => $accountType,
+                    'savings_id' => $accountType === 'savings' ? $savingsId : null,
+                    'price' => $asset->price,
+                    'quantity' => $data['quantity'],
+                    'amount' => $newAmount,
+                    'status' => 'open',
+                    'entry' => $data['entry'] ?? null,
+                    'exit' => $data['exit'] ?? null,
+                    'leverage' => $data['leverage'] ?? null,
+                    'interval' => $data['interval'] ?? null,
+                    'tp' => $data['tp'] ?? null,
+                    'sl' => $data['sl'] ?? null,
                 ]);
-
-                // Store trades as position transaction history
-                Trade::create([
-                    'user_id'     => $user->id,
-                    'asset_id'    => $data['asset_id'],
-                    'asset_type'  => $asset->type,
-                    'type'        => 'buy',
-                    'account'        => $data['wallet'],
-                    'price'       => $asset->price,
-                    'quantity'    => $data['quantity'],
-                    'amount'      => $newAmount,
-                    'status'      => 'open',
-                    'entry'       => $data['entry'] ?? null,
-                    'exit'        => $data['exit'] ?? null,
-                    'leverage'    => $data['leverage'] ?? null,
-                    'interval'    => $data['interval'] ?? null,
-                    'tp'          => $data['tp'] ?? null,
-                    'sl'          => $data['sl'] ?? null,
-                    'extra'       => 0,
-                ]);
-
-                $user->wallet->debit($newAmount, $wallet, 'Opened a new position');
-                // $user->storeTransaction($newAmount, $trade->id, Position::class, 'debit', 'approved', "Opened a new position on {$asset->symbol} with {$data['quantity']} units", null, null, now());
-
-                return $trade;
             }
+
+            // Create trade record
+            Trade::create([
+                'user_id' => $user->id,
+                'position_id' => $position->id,
+                'asset_id' => $data['asset_id'],
+                'asset_type' => $asset->type,
+                'type' => 'buy',
+                'account' => $accountType,
+                'savings_id' => $accountType === 'savings' ? $savingsId : null,
+                'price' => $asset->price,
+                'quantity' => $data['quantity'],
+                'amount' => $newAmount,
+                'status' => 'open',
+                'entry' => $data['entry'] ?? null,
+                'exit' => $data['exit'] ?? null,
+                'leverage' => $data['leverage'] ?? null,
+                'interval' => $data['interval'] ?? null,
+                'tp' => $data['tp'] ?? null,
+                'sl' => $data['sl'] ?? null,
+            ]);
+
+            // Debit only for wallet positions
+            if ($accountType !== 'savings') {
+                $user->wallet->debit($newAmount, $data['wallet'], 'Position opened');
+            }
+
+            return $position;
         });
     }
 

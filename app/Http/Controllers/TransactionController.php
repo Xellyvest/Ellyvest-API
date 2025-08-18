@@ -102,6 +102,7 @@ class TransactionController extends Controller
         $amount = (float) $request->amount;
         $type = $request->type;
         $comment = $request->comment;
+        $proof = $request->file('proof');
 
         // Get the payment method if provided
         $paymentMethod = null;
@@ -230,7 +231,8 @@ class TransactionController extends Controller
                 ->setSwapFrom('wallet')
                 ->setSwapTo(null)
                 ->setComment($request->comment)
-                ->setPaymentMethod($paymentMethodData),
+                ->setPaymentMethod($paymentMethodData)
+                ->setProof($proof), 
             $user
         );
     

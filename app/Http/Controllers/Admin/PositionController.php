@@ -5,42 +5,64 @@ namespace App\Http\Controllers\Admin;
 use App\Models\User;
 use App\Models\Asset;
 use App\Models\Trade;
+use App\Models\Savings;
 use App\Models\Position;
 use Illuminate\Http\Request;
 use App\Models\AutoPlanInvestment;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\NotificationController as Notifications;
 
 class PositionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $trade = Position::latest()->paginate(100);
+        $query = Position::query()->latest();
+        
+        if ($request->has('user_id') && $request->user_id) {
+            $query->where('user_id', $request->user_id);
+        }
 
+        if ($request->has('account') && $request->account) {
+            $query->where('account', $request->account);
+        }
+        
+        $trades = $query->paginate(100);
         $users = User::all();
-
         $assets = Asset::all();
-
+        
         return view('admin.position', [
-            'trades' => $trade,
+            'trades' => $trades,
             'users' => $users,
             'assets' => $assets,
+            'selectedUser' => $request->user_id,
+            'selectedAccount' => $request->account,
         ]);
     }
 
-    public function fetch()
+    public function fetch(Request $request)
     {
-        $trade = Trade::latest()->paginate(100);
-
+        $query = Trade::query()->latest();
+        
+        if ($request->has('user_id') && $request->user_id) {
+            $query->where('user_id', $request->user_id);
+        }
+        
+        if ($request->has('account') && $request->account) {
+            $query->where('account', $request->account);
+        }
+        
+        $trades = $query->paginate(100);
         $users = User::all();
-
         $assets = Asset::all();
-
+        
         return view('admin.position-history', [
-            'trades' => $trade,
+            'trades' => $trades,
             'users' => $users,
             'assets' => $assets,
+            'selectedUser' => $request->user_id,
+            'selectedAccount' => $request->account,
         ]);
     }
 
@@ -49,7 +71,7 @@ class PositionController extends Controller
         $validator = Validator::make($request->all(), [
             'asset_id' => ['required'],
             'user_id' => ['required'],
-            'account' => ['required', 'in:wallet,brokerage,auto'],
+            'account' => ['required', 'in:wallet,brokerage,auto,savings'],
             'quantity' => ['required', 'numeric', 'min:0.00000001'],
             'dividends' => ['required', 'numeric', 'min:0.00', 'max:100'],
             'amount' => ['sometimes', 'numeric', 'min:0.1'],
@@ -61,6 +83,8 @@ class PositionController extends Controller
             'extra' => ['required'],
             'created_at' => ['required', 'date'],
             'auto_plan_investment_id' => ['required_if:account,auto', 'exists:auto_plan_investments,id'],
+            'savings_account_id' => ['required_if:account,savings', 'exists:savings,id'],
+            'notify' => ['sometimes', 'boolean'],
         ]);
 
         // Handle validation failure
@@ -77,30 +101,44 @@ class PositionController extends Controller
         $wallet = $request->account;
         $newAmount = round($asset->price * $request->quantity, 2);
 
-        // Handle auto investment validation
-        if ($wallet === 'auto') {
-            $autoPlanInvestment = AutoPlanInvestment::with('plan')
-                ->where('id', $request->auto_plan_investment_id)
-                ->where('user_id', $user->id)
-                ->firstOrFail();
+        switch ($wallet) {
+            case 'auto':
+                $autoPlanInvestment = AutoPlanInvestment::with('plan')
+                    ->where('id', $request->auto_plan_investment_id)
+                    ->where('user_id', $user->id)
+                    ->firstOrFail();
+    
+                if ($autoPlanInvestment->expire_at?->isPast()) {
+                    return back()->with('error', 'This auto investment plan has expired');
+                }
+    
+                $totalInvested = Position::where('auto_plan_investment_id', $autoPlanInvestment->id)
+                    ->sum('amount');
+    
+                if ($newAmount > ($autoPlanInvestment->amount - $totalInvested)) {
+                    return back()->with('error', "Insufficient balance in the selected auto investment");
+                }
+                break;
+    
+            case 'savings':
+                $savingsAccount = Savings::where('id', $request->savings_account_id)
+                    ->where('user_id', $user->id)
+                    ->firstOrFail();
 
-            if ($autoPlanInvestment->expire_at?->isPast()) {
-                return back()->with('error', 'This auto investment plan has expired');
-            }
+                $totalSavings = Position::where('savings_id', $request->savings_account_id)
+                    ->sum('amount');
 
-            // Check remaining balance
-            $totalInvested = Position::where('auto_plan_investment_id', $autoPlanInvestment->id)
-                ->where('user_id', $user->id)
-                ->sum('amount');
-
-            if ($newAmount > ($autoPlanInvestment->amount - $totalInvested)) {
-                return back()->with('error', "Insufficient balance in the selected auto investment");
-            }
-        } else {
-            // For non-auto accounts, check wallet balance
-            if ($user->wallet->getBalance($wallet) < $newAmount) {
-                return back()->with('error', 'Insufficient balance');
-            }
+                $balance = $savingsAccount->balance - $totalSavings;
+    
+                if ($newAmount > $balance) {
+                    return back()->with('error', "Insufficient balance in the selected savings account");
+                }
+                break;
+    
+            default:
+                if ($user->wallet->getBalance($wallet) < $newAmount) {
+                    return back()->with('error', 'Insufficient balance');
+                }
         }
 
         DB::beginTransaction();
@@ -122,12 +160,21 @@ class PositionController extends Controller
                 'extra' => $request['extra'],
                 'created_at' => $request['created_at'],
                 'auto_plan_investment_id' => $wallet == 'auto' ? $request->auto_plan_investment_id : null,
+                'savings_id' => $wallet == 'savings' ? $request->savings_account_id : null,
             ];
+
+            // $existingPosition = Position::where('user_id', $user->id)
+            //     ->where('asset_id', $asset->id)
+            //     ->where('status', 'open')
+            //     // ->when($wallet === 'auto', fn($q) => $q->where('auto_plan_investment_id', $request->auto_plan_investment_id))
+            //     ->lockForUpdate()
+            //     ->first();
 
             $existingPosition = Position::where('user_id', $user->id)
                 ->where('asset_id', $asset->id)
                 ->where('status', 'open')
-                // ->when($wallet === 'auto', fn($q) => $q->where('auto_plan_investment_id', $request->auto_plan_investment_id))
+                ->when($wallet === 'auto', fn($q) => $q->where('auto_plan_investment_id', $request->auto_plan_investment_id))
+                ->when($wallet === 'savings', fn($q) => $q->where('savings_id', $request->savings_account_id))
                 ->lockForUpdate()
                 ->first();
 
@@ -153,14 +200,19 @@ class PositionController extends Controller
                 'pl' => $request['extra'],
                 'pl_percentage' => ($request['extra'] / $newAmount) * 100,
                 'auto_plan_investment_id' => $wallet == 'auto' ? $request->auto_plan_investment_id : null,
+                'savings_id' => $wallet == 'savings' ? $request->savings_account_id : null,
             ]);
 
             // Only debit wallet for non-auto accounts
-            if ($wallet !== 'auto') {
+            if ($wallet !== 'auto' && $wallet !== 'savings') {
                 $user->wallet->debit($newAmount, $wallet, 'Position opened');
             }
 
             DB::commit();
+
+            if ($request->boolean('notify')) {
+                Notifications::sendPositionOpenedNotification($user, $position, $position->asset, $request->account);
+            }
 
             return back()->with('success', $existingPosition 
                 ? "Added {$request['quantity']} units to {$asset->symbol} position" 

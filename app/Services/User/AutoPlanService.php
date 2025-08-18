@@ -4,9 +4,11 @@ namespace App\Services\User;
 
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Admin;
 use App\Models\AutoPlan;
 use App\Models\AutoPlanInvestment;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\NotificationController;
 
 class AutoPlanService
 {
@@ -36,6 +38,10 @@ class AutoPlanService
             ]);
 
             $user->wallet->debit($data['amount'], $data['wallet'], 'Auto plan investment');
+
+            NotificationController::sendUserNewAutoInvestmentNotification($user, $auto);
+            $admin = Admin::where('email', config('app.admin_mail'))->first();
+            NotificationController::sendAdminNewAutoInvestmentNotification($admin, $user, $auto);
 
             return $auto;
         });

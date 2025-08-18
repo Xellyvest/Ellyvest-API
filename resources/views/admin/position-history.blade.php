@@ -34,20 +34,42 @@
                         <div class="card-header">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h4>Positions</h4>
+                                    <h4>Trade History</h4>
                                 </div>
-                                <!-- <div class="d-flex align-items-center">
-                                    <input class="form-control" id="inputEmail4" type="email" placeholder="Search...">
-                                    <a class="btn btn-success w-100 mx-2" 
-                                        href="#"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#addTrade" 
-                                        data-action="Credit"
-                                        data-url=""
-                                    >
-                                        <i class="fa fa-plus"></i>Add Trade
-                                    </a>
-                                </div> -->
+                            </div>
+                            <div class="my-4">
+                                <div class="">
+                                    <form method="GET" action="{{ route('admin.positions.history') }}">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <label for="user_id" class="form-label">Filter by User</label>
+                                                <select name="user_id" id="user_id" class="form-select">
+                                                    <option value="">All Users</option>
+                                                    @foreach($users as $user)
+                                                        <option value="{{ $user->id }}" {{ $selectedUser == $user->id ? 'selected' : '' }}>
+                                                            {{ $user->first_name }} {{ $user->last_name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <label for="account" class="form-label">Filter by Account Type</label>
+                                                <select name="account" id="account" class="form-select">
+                                                    <option value="">All Accounts</option>
+                                                    <option value="wallet" {{ $selectedAccount == 'wallet' ? 'selected' : '' }}>Wallet</option>
+                                                    <option value="brokerage" {{ $selectedAccount == 'brokerage' ? 'selected' : '' }}>Brokerage</option>
+                                                    <option value="auto" {{ $selectedAccount == 'auto' ? 'selected' : '' }}>Auto</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="col-md-4 d-flex align-items-end">
+                                                <button type="submit" class="btn btn-dark me-2">Filter</button>
+                                                <a href="{{ route('admin.positions.history') }}" class="btn btn-light">Reset</a>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                         <div class="table-responsive custom-scrollbar px-4">

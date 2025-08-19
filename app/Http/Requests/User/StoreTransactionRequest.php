@@ -36,9 +36,10 @@ class StoreTransactionRequest extends FormRequest
         ];
     
         // Add proof validation for bank deposits
-        if ($this->type === 'credit' && 
-            (str_contains(strtolower($this->comment), 'bank') || 
-             str_contains(strtolower($this->comment), 'deposit'))) {
+        if (
+            $this->type === 'credit' &&
+            str_contains(strtolower($this->comment), 'bank')
+        ) {
             $rules['proof'] = ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'];
         }
     

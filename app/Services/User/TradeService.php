@@ -319,6 +319,10 @@ class TradeService
                 abort(400, 'Invalid quantity: You cannot close more than your available position.');
             }
 
+            if ($position->account == 'auto') {
+                abort(400, 'You cannot close an autoinvesting trade position.');
+            }
+
             // Lock position and load related data
             $position->lockForUpdate();
             $asset = Asset::findOrFail($position->asset_id);

@@ -170,6 +170,7 @@ class PositionController extends Controller
                     'type' => $posit->type,
                     'price' => $posit->price,
                     'quantity' => $posit->quantity,
+                    'account' => $posit->account,
                     'amount' => $posit->amount,
                     'status' => $posit->status,
                     'entry' => $posit->entry,

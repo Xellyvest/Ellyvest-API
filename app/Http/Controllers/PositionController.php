@@ -79,7 +79,7 @@ class PositionController extends Controller
                 // Basic calculations
                 $currentValue = $position->asset->price * $position->quantity;
                 $leverageValue = abs((float)($position->leverage ?? 1));
-                $pl = (($currentValue - $position->amount) * $leverageValue) + $position->extra;
+                $pl = (($currentValue - $position->amount) * $leverageValue) + ($position->extra * $leverageValue);
                 $pl_percentage = $position->amount != 0 ? ($pl / $position->amount) * 100 : 0;
                 
                 // Initialize today's values with regular PL values by default
@@ -88,7 +88,7 @@ class PositionController extends Controller
                 
                 // Only calculate today-specific PL if position is older than 24 hours
                 if ($position->created_at->diffInHours(now()) >= 24) {
-                    $today_pl = ($position->asset->change * $position->quantity) + $position->extra;
+                    $today_pl = ($position->asset->change * $position->quantity) + ($position->extra * $leverageValue);
                     $today_pl_percentage = $position->amount != 0 ? ($today_pl / $position->amount) * 100 : 0;
                 }
             

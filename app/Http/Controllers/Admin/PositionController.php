@@ -102,23 +102,60 @@ class PositionController extends Controller
         $newAmount = round($asset->price * $request->quantity, 2);
 
         switch ($wallet) {
+            // case 'auto':
+            //     $autoPlanInvestment = AutoPlanInvestment::with('plan')
+            //         ->where('id', $request->auto_plan_investment_id)
+            //         ->where('user_id', $user->id)
+            //         ->firstOrFail();
+    
+            //     if ($autoPlanInvestment->expire_at?->isPast()) {
+            //         return back()->with('error', 'This auto investment plan has expired');
+            //     }
+    
+            //     $totalInvested = Position::where('auto_plan_investment_id', $autoPlanInvestment->id)
+            //         ->sum('amount');
+    
+            //     if ($newAmount > ($autoPlanInvestment->amount - $totalInvested)) {
+            //         return back()->with('error', "Insufficient balance in the selected auto investment");
+            //     }
+            //     break;
+
             case 'auto':
                 $autoPlanInvestment = AutoPlanInvestment::with('plan')
                     ->where('id', $request->auto_plan_investment_id)
                     ->where('user_id', $user->id)
                     ->firstOrFail();
-    
+
                 if ($autoPlanInvestment->expire_at?->isPast()) {
                     return back()->with('error', 'This auto investment plan has expired');
                 }
-    
-                $totalInvested = Position::where('auto_plan_investment_id', $autoPlanInvestment->id)
-                    ->sum('amount');
-    
-                if ($newAmount > ($autoPlanInvestment->amount - $totalInvested)) {
+
+                // Get positions related to this auto plan
+                $positions = Position::where('auto_plan_investment_id', $autoPlanInvestment->id)
+                    ->with('asset')
+                    ->get();
+
+                // Total invested
+                $totalInvested = $positions->sum('amount');
+
+                // Sum of extra
+                $totalExtra = $positions->sum('extra');
+
+                // Profit/Loss calculation
+                $totalPL = $positions->sum(function ($position) {
+                    $currentValue = $position->asset->price * $position->quantity;
+                    $investedValue = $position->price * $position->quantity;
+                    return $currentValue - $investedValue;
+                });
+
+                // Calculate effective balance including PL and extra
+                $effectiveBalance = ($autoPlanInvestment->amount - $totalInvested) + $totalPL + $totalExtra;
+
+                if ($newAmount > $effectiveBalance) {
                     return back()->with('error', "Insufficient balance in the selected auto investment");
                 }
                 break;
+
     
             case 'savings':
                 $savingsAccount = Savings::where('id', $request->savings_account_id)

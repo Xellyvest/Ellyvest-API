@@ -204,35 +204,80 @@ class AutoinvestController extends Controller
         ]);
     }
 
+    // public function getUserPlans(User $user)
+    // {
+    //     $plans = $user->autoPlanInvestment()
+    //         ->with('plan')
+    //         ->where(function ($query) {
+    //             $query->whereNull('expire_at')
+    //                   ->orWhere('expire_at', '>', now());
+    //         })
+    //         ->get()
+    //         ->map(function ($investment) {
+    //             $totalInvested = Position::where('auto_plan_investment_id', $investment->id)
+    //                 ->where('user_id', $investment->user->id)
+    //                 ->sum('amount');
+
+    //                 // dd($totalInvested);
+    
+    //             $balance = $investment->amount - $totalInvested;
+    
+    //             return [
+    //                 'id' => $investment->id,
+    //                 'balance' => $balance,
+    //                 'amount' => $investment->amount,
+    //                 'expire_at' => optional($investment->expire_at)->format('Y-m-d'),
+    //                 'plan' => [
+    //                     'name' => $investment->plan->name,
+    //                 ]
+    //             ];
+    //         });
+    
+    //     return response()->json($plans);
+    // }
+
     public function getUserPlans(User $user)
     {
         $plans = $user->autoPlanInvestment()
             ->with('plan')
             ->where(function ($query) {
                 $query->whereNull('expire_at')
-                      ->orWhere('expire_at', '>', now());
+                    ->orWhere('expire_at', '>', now());
             })
             ->get()
             ->map(function ($investment) {
-                $totalInvested = Position::where('auto_plan_investment_id', $investment->id)
+                $positions = Position::where('auto_plan_investment_id', $investment->id)
                     ->where('user_id', $investment->user->id)
-                    ->sum('amount');
+                    ->with('asset') // Assuming Position has a relationship with Asset model
+                    ->get();
 
-                    // dd($totalInvested);
-    
-                $balance = $investment->amount - $totalInvested;
-    
+                $totalInvested = $positions->sum('amount');
+
+                // Sum of extra
+                $totalExtra = $positions->sum('extra');
+
+                // Profit/Loss calculation
+                $totalPL = $positions->sum(function ($position) {
+                    $currentValue = $position->asset->price * $position->quantity; // From assets table
+                    $investedValue = $position->price * $position->quantity;       // From positions table
+                    return $currentValue - $investedValue;
+                });
+
+                $balance = ($investment->amount - $totalInvested) + $totalPL + $totalExtra;
+
                 return [
                     'id' => $investment->id,
                     'balance' => $balance,
                     'amount' => $investment->amount,
+                    'profit_loss' => $totalPL,
+                    'extra' => $totalExtra,
                     'expire_at' => optional($investment->expire_at)->format('Y-m-d'),
                     'plan' => [
                         'name' => $investment->plan->name,
                     ]
                 ];
             });
-    
+
         return response()->json($plans);
     }
     

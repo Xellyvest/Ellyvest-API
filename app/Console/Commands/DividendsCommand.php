@@ -3,10 +3,13 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Models\Wallet;
 use App\Models\Position;
 use App\Models\Dividends;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use App\Services\User\TransactionService;
+use App\DataTransferObjects\Models\TransactionModelData;
 
 class DividendsCommand extends Command
 {
@@ -104,6 +107,23 @@ class DividendsCommand extends Command
                         "Daily dividend charge from all positions"
                     );
                 }
+
+                app(TransactionService::class)->create(
+                    (new TransactionModelData())
+                        ->setUserId($user->id)
+                        ->setAmount(abs($totalDividendAmount)) // positive value
+                        ->setTransactableId($user->wallet->id)
+                        ->setTransactableType(Wallet::class)
+                        ->setType($totalDividendAmount > 0 ? 'credit' : 'debit')
+                        ->setStatus('approved')
+                        ->setComment("Dividend " . ($totalDividendAmount > 0 ? 'credited' : 'debited') . " from positions")
+                        ->setSwapFrom($account)
+                        ->setSwapTo(null)
+                        ->setPaymentMethod(null)
+                        ->setProof(null),
+                    $user
+                );
+
             });
         }
 

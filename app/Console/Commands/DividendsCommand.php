@@ -32,6 +32,11 @@ class DividendsCommand extends Command
      */
     public function handle()
     {
+        if (now()->isWeekend()) {
+            $this->info('Today is a weekend. Skipping dividend processing.');
+            return;
+        }
+        
         // Get all users with active positions that have dividends
         $users = User::whereHas('positions', function($query) {
                 $query->where('status', 'open')

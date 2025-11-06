@@ -318,10 +318,12 @@ class PositionController extends Controller
 
             if ($pl != 0) {
                 $transactionType = $pl > 0 ? 'credit' : 'debit';
-                if ($wallet === 'auto') {
-                    $autoPlan = $position->autoPlanInvestment;
+                if ($wallet == 'auto') {
+                    $autoPlan = $position->autoInvest;
+                    logger($autoPlan);
                     if ($autoPlan) {
                         $newAmount = $autoPlan->amount + $pl;
+                        logger($pl);
                         $autoPlan->update(['amount' => $newAmount]);
                     }
                 } else {

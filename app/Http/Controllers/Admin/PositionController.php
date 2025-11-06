@@ -311,9 +311,22 @@ class PositionController extends Controller
             if($wallet !== 'auto')
                 $user->wallet->credit($openingValue, $wallet, $comment);
             
+            // if ($pl != 0) {
+            //     $transactionType = $pl > 0 ? 'credit' : 'debit';
+            //     $user->wallet->{$transactionType}(abs($pl), $wallet, $comment);
+            // }
+
             if ($pl != 0) {
                 $transactionType = $pl > 0 ? 'credit' : 'debit';
-                $user->wallet->{$transactionType}(abs($pl), $wallet, $comment);
+                if ($wallet === 'auto') {
+                    $autoPlan = $position->autoPlanInvestment;
+                    if ($autoPlan) {
+                        $newAmount = $autoPlan->amount + $pl;
+                        $autoPlan->update(['amount' => $newAmount]);
+                    }
+                } else {
+                    $user->wallet->{$transactionType}(abs($pl), $wallet, $comment);
+                }
             }
 
             // Record the trade

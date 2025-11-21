@@ -150,7 +150,7 @@ class ProfileController extends Controller
 
                 // Calculate total value of positions
                 $totalPositionsValue = $positions->sum(function ($position) {
-                    return ($position->quantity * $position->asset->price + $position->extra) * abs($position->leverage ?? 1);
+                    return ($position->quantity * $position->asset->price + $position->extra) * $position->leverage;
                 });
 
                 // Total value = balance + positions value

@@ -150,8 +150,7 @@ class ProfileController extends Controller
 
                 // Calculate total value of positions
                 $totalPositionsValue = $positions->sum(function ($position) {
-                    $val = (($position->quantity * $position->asset->price) + $position->extra) * $position->leverage;
-                    return $val;
+                    return $position->quantity * $position->asset->price + $position->extra;
                 });
 
                 // Total value = balance + positions value
@@ -175,7 +174,7 @@ class ProfileController extends Controller
                 foreach ($autoInvestments as $autoInvestment) {
                     foreach ($autoInvestment->positions as $position) {
                         if ($position->asset) { // Check if asset relation exists
-                            $positionsValue += (($position->quantity * $position->asset->price + $position->extra)  * $position->leverage) - $position->amount;
+                            $positionsValue += ($position->quantity * $position->asset->price) + $position->extra - $position->amount;
                         }
                     }
                 }

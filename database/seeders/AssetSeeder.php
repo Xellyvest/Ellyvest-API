@@ -106,67 +106,69 @@ class AssetSeeder extends Seeder
         // ];
 
         // ::::: ETF's Data
-        $symbols = [
-            // Broad Market 
-            'SPY', 'VOO', 'IVV', 'VTI', 'SCHB', 'QQQ', 'DIA', 'IWM', 'EFA', 'VEA',
-            'EEM', 'VWO', 'AGG', 'BND', 'LQD', 'TIP', 'IEI', 'TLT', 'SHY', 'IEF',
+        // $symbols = [
+        //     // Broad Market 
+        //     'SPY', 'VOO', 'IVV', 'VTI', 'SCHB', 'QQQ', 'DIA', 'IWM', 'EFA', 'VEA',
+        //     'EEM', 'VWO', 'AGG', 'BND', 'LQD', 'TIP', 'IEI', 'TLT', 'SHY', 'IEF',
         
-            // Sector & Thematic
-            'XLK', 'XLV', 'XLF', 'XLY', 'XLP', 'XLI', 'XLU', 'XLE', 'XLRE', 'XLDE',
-            'XLB', 'XLC', 'XBI', 'XHB', 'XRT', 'XOP', 'IYW', 'IYH', 'IYF', 'IYC',
+        //     // Sector & Thematic
+        //     'XLK', 'XLV', 'XLF', 'XLY', 'XLP', 'XLI', 'XLU', 'XLE', 'XLRE', 'XLDE',
+        //     'XLB', 'XLC', 'XBI', 'XHB', 'XRT', 'XOP', 'IYW', 'IYH', 'IYF', 'IYC',
         
-            // Dividend & Income
-            'VIG', 'SCHD', 'DVY', 'SDY', 'DVP', 'NOBL', 'FDL', 'VYM', 'HDV', 'SPHD',
+        //     // Dividend & Income
+        //     'VIG', 'SCHD', 'DVY', 'SDY', 'DVP', 'NOBL', 'FDL', 'VYM', 'HDV', 'SPHD',
         
-            // International Developed & Emerging Markets
-            'VEU', 'VXUS', 'EEMV', 'GDX', 'GLD', 'SLV', 'DBC', 'USO', 'UNG', 'UUP',
+        //     // International Developed & Emerging Markets
+        //     'VEU', 'VXUS', 'EEMV', 'GDX', 'GLD', 'SLV', 'DBC', 'USO', 'UNG', 'UUP',
         
-            // Bond & Fixed Income
-            'BIV', 'BLV', 'BSV', 'VCIT', 'VCSH', 'VCIT', 'VCIT',  // duplicates removed
-            'BNDX', 'EMB', 'PCY', 'MUB', 'IGSB', 'CSJ', 'SJNK', 'JNK', 'HYD', 'HYG',
+        //     // Bond & Fixed Income
+        //     'BIV', 'BLV', 'BSV', 'VCIT', 'VCSH', 'VCIT', 'VCIT',  // duplicates removed
+        //     'BNDX', 'EMB', 'PCY', 'MUB', 'IGSB', 'CSJ', 'SJNK', 'JNK', 'HYD', 'HYG',
         
-            // Real Estate & Alternatives
-            'VNQ', 'SCHH', 'IYR', 'XLRE', 'REET', 'RWR', 'RWX', 'REM', 'O', 'SPG',
+        //     // Real Estate & Alternatives
+        //     'VNQ', 'SCHH', 'IYR', 'XLRE', 'REET', 'RWR', 'RWX', 'REM', 'O', 'SPG',
         
-            // Thematic & Innovation
-            'ARKK', 'ARKG', 'ARKW', 'ARKF', 'XT', 'BOTZ', 'SOCL', 'LIT', 'IGM', 'ITA',
-            'USMV', 'MTUM', 'QUAL', 'VUG', 'VOOG', 'IWD', 'IWF', 'IWP', 'IWM', 'TLT',
+        //     // Thematic & Innovation
+        //     'ARKK', 'ARKG', 'ARKW', 'ARKF', 'XT', 'BOTZ', 'SOCL', 'LIT', 'IGM', 'ITA',
+        //     'USMV', 'MTUM', 'QUAL', 'VUG', 'VOOG', 'IWD', 'IWF', 'IWP', 'IWM', 'TLT',
         
-            // Commodities & Currencies
-            'UNG', 'USO', 'UUP', 'FXE', 'FXY', 'GLD', 'IAU', 'SLV', 'DBC', 'PDBC',
+        //     // Commodities & Currencies
+        //     'UNG', 'USO', 'UUP', 'FXE', 'FXY', 'GLD', 'IAU', 'SLV', 'DBC', 'PDBC',
 
-            // Broad Market & Large Cap
-            'SCHG','IWF','IWB','VV','SCHX','SPTM','SCHZ','AGGY','VIGI','SPDW',
-            'SPLG','ITOT','ONEQ','DGRO','SCHD','SCHY','SCHB','SUSA','SPYD','SPYV',
+        //     // Broad Market & Large Cap
+        //     'SCHG','IWF','IWB','VV','SCHX','SPTM','SCHZ','AGGY','VIGI','SPDW',
+        //     'SPLG','ITOT','ONEQ','DGRO','SCHD','SCHY','SCHB','SUSA','SPYD','SPYV',
             
-            // Mid/Small Cap
-            'VB','IJH','IJS','IJR','MDY','SMLN','SLY','SLYV','EWMC','EWMS',
+        //     // Mid/Small Cap
+        //     'VB','IJH','IJS','IJR','MDY','SMLN','SLY','SLYV','EWMC','EWMS',
             
-            // Sector-Specific (complementing prior list)
-            'IYJ','IYK','IYT','IYZ','IYE','IYW','IXC','IXG','IXN','IXP',
-            'IXU','IXV','IXG','IXH','IXJ','IXN','IXP','IXY','IYM','IYG',
+        //     // Sector-Specific (complementing prior list)
+        //     'IYJ','IYK','IYT','IYZ','IYE','IYW','IXC','IXG','IXN','IXP',
+        //     'IXU','IXV','IXG','IXH','IXJ','IXN','IXP','IXY','IYM','IYG',
             
-            // International (Developed & Emerging)
-            'EPP','EFA','EEM','EWZ','EWT','EWA','EWC','EWL','EWU','EWS',
-            'EWP','EWH','EWI','EWW','EWY','EWG','EWD','INDA','SCZ','FEZ',
+        //     // International (Developed & Emerging)
+        //     'EPP','EFA','EEM','EWZ','EWT','EWA','EWC','EWL','EWU','EWS',
+        //     'EWP','EWH','EWI','EWW','EWY','EWG','EWD','INDA','SCZ','FEZ',
             
-            // Fixed Income & Bonds
-            'BSYL','BSV','BIV','LQD','VNQI','MBB','SJNK','IBND','SCHP','TIPZ',
+        //     // Fixed Income & Bonds
+        //     'BSYL','BSV','BIV','LQD','VNQI','MBB','SJNK','IBND','SCHP','TIPZ',
             
-            // Dividend & Value
-            'VTV','IVE','RSP','DIA','SDY','DON','RSP','VLUE','PFF','VIG',
+        //     // Dividend & Value
+        //     'VTV','IVE','RSP','DIA','SDY','DON','RSP','VLUE','PFF','VIG',
             
-            // Real Estate/Niche
-            'REET','ROBO','FTXR','FINX','FINU','CIBR','KWEB','IBB','XLRE','XLK',
-            'PNQI','ARKQ','ARKV','SPHB','USMV','QUAL','VUG','VOOG','IWP','IWD',
+        //     // Real Estate/Niche
+        //     'REET','ROBO','FTXR','FINX','FINU','CIBR','KWEB','IBB','XLRE','XLK',
+        //     'PNQI','ARKQ','ARKV','SPHB','USMV','QUAL','VUG','VOOG','IWP','IWD',
             
-            // Commodities & Currency
-            'PALL','PALL','URA','SLYG','GDXJ','GLTR','UNL','UUP','FXY','FXC',
-            'FXA','FXB','FCOM','FCG','FXS','FXM','FXP','FXU','FXE',
+        //     // Commodities & Currency
+        //     'PALL','PALL','URA','SLYG','GDXJ','GLTR','UNL','UUP','FXY','FXC',
+        //     'FXA','FXB','FCOM','FCG','FXS','FXM','FXP','FXU','FXE',
             
-            // Thematic & Smart Beta
-            'IHI','IYF','IYJ','IYM','IYT','XBIO','XWEB','XT','XLRE','XLV',
-        ];
+        //     // Thematic & Smart Beta
+        //     'IHI','IYF','IYJ','IYM','IYT','XBIO','XWEB','XT','XLRE','XLV',
+        // ];
+
+        $symbols = ['MSTR'];
         
         
         $apiKey = env('ASSET_KEY');;

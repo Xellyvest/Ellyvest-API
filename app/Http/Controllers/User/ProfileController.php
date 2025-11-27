@@ -167,7 +167,7 @@ class ProfileController extends Controller
             
                 // Get all active auto plan investments
                 $autoInvestments = AutoPlanInvestment::where('user_id', $user->id)
-                    ->where('expire_at', '>', now())
+                    // ->where('expire_at', '>', now())
                     ->with('positions.asset')
                     ->get();
             

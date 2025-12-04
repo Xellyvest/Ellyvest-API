@@ -151,8 +151,7 @@ class ProfileController extends Controller
                 // Calculate total value of positions
                 $totalPositionsValue = $positions->sum(function ($position) {
                     $leverageValue = abs((float)($position->leverage ?? 1));
-                    $val = ($position->quantity * $position->asset->price) + $position->extra * $leverageValue;
-                    // $val = (($position->quantity * $position->asset->price) + $position->extra * $leverageValue) - $position->amount;
+                    $val = (($position->quantity * $position->asset->price) * $leverageValue) + ($position->extra * $leverageValue);
                     return $val;
                 });
 
@@ -202,9 +201,10 @@ class ProfileController extends Controller
                         $currentPrice = $position->asset->price;
                         $quantity = $position->quantity;
                         $extra = $position->pl;
-    
+                        $leverageValue = abs((float)($position->leverage ?? 1));
+                        $total = (($currentPrice * $quantity) - $position->amount) * $leverageValue + ($extra * $leverageValue);
                         // return ($currentPrice - $openingPrice) * $quantity + $extra;
-                        return ($currentPrice * $quantity) - $position->amount + $extra;
+                        return $total;
                     });
 
                 $last24hrSell = Trade::where('user_id', $user->id)
@@ -215,8 +215,9 @@ class ProfileController extends Controller
 
                     $totalSell = $last24hrSell->sum(function ($position) {;
                         $extra = $position->pl;
+                        $leverageValue = abs((float)($position->leverage ?? 1));
     
-                        return $extra;
+                        return ($extra * $leverageValue);
                     });
 
                 $totalPL = $totalBuy + $totalSell;

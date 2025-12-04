@@ -177,7 +177,8 @@ class ProfileController extends Controller
                     foreach ($autoInvestment->positions as $position) {
                         if ($position->asset) { // Check if asset relation exists
                             $leverageValue = abs((float)($position->leverage ?? 1));
-                            $positionsValue += (($position->quantity * $position->asset->price) + $position->extra * $leverageValue) - $position->amount;
+                            // $positionsValue += (($position->quantity * $position->asset->price) + $position->extra * $leverageValue) - $position->amount;
+                            $positionsValue += ((($position->quantity * $position->asset->price) - $position->amount) * $leverageValue) + ($position->extra * $leverageValue);
                         }
                     }
                 }

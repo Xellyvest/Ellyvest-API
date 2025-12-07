@@ -96,6 +96,7 @@ class UserController extends Controller
             'currency_id' => 'nullable|exists:currencies,id',
             'country_id' => 'nullable|exists:countries,id',
             'state_id' => 'nullable|exists:states,id',
+            'city' => 'nullable|string|max:225',
         ]);
 
         // Update the user data
@@ -114,6 +115,7 @@ class UserController extends Controller
             'currency_id' => $validated['currency_id'] ?? $user->currency_id,
             'country_id' => $validated['country_id'] ?? $user->country_id,
             'state_id' => $validated['state_id'] ?? $user->state_id,
+            'city' => $validated['city'] ?? $user->city,
         ]);
 
         // Redirect back with success message

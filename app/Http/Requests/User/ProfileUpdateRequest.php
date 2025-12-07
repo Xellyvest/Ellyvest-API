@@ -26,6 +26,7 @@ class ProfileUpdateRequest extends FormRequest
             'country_id' => 'sometimes|uuid|exists:countries,id',
             'state_id' => 'sometimes|uuid|exists:states,id',
             'city_id' => 'sometimes|uuid|exists:cities,id',
+            'city' => 'sometimes|string|max:255',
             'currency_id' => 'sometimes|uuid|exists:currencies,id',
             'first_name' => 'sometimes|string|max:191',
             'last_name' => 'sometimes|string|max:191',

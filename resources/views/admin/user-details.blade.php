@@ -258,6 +258,12 @@
 
                             <div class="col-md-4">
                                 <div class="mb-3">
+                                    <label class="form-label">City</label>
+                                    <input class="form-control" type="text" value="{{ $user->city }}" name="city">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
                                     <label class="form-label">Zipcode</label>
                                     <input class="form-control" type="text" value="{{ $user->zipcode }}" name="zipcode">
                                 </div>

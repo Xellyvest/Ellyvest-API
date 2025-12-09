@@ -271,7 +271,7 @@ class AnalyticsService
             // }])
             ->get()
             ->sum(function($position) {
-                return ($position->quantity * ($position->asset->price ?? 0)) + $position->extra - $position->amount;
+                return ((($position->quantity * ($position->asset->price ?? 0)) - $position->amount) * $position->leverage) + ($position->extra * $position->leverage) ;
             });
 
         // 3. Calculate total investment (positions value at that time)

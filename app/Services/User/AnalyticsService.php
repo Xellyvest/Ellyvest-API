@@ -111,7 +111,7 @@ class AnalyticsService
         $rawTotalInvestment = $positions->sum(function($trade) {
             $currentPrice = $trade->asset->price;
             $quantity = $trade->quantity;
-            $extra = $trade->pl;
+            $extra = $trade->extra;
             $leverageValue = abs((float)($trade->leverage ?? 1));
             $total = ((($currentPrice * $quantity) - $trade->amount) * $leverageValue) + ($extra * $leverageValue) + $trade->amount;
 

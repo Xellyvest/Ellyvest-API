@@ -112,8 +112,8 @@ class AnalyticsService
             $currentPrice = $trade->asset->price;
             $quantity = $trade->quantity;
             $extra = $trade->pl;
-            $leverageValue = abs((float)($pst->leverage ?? 1));
-            $total = (($currentPrice * $quantity) * $leverageValue) + ($extra * $leverageValue);
+            $leverageValue = abs((float)($trade->leverage ?? 1));
+            $total = ((($currentPrice * $quantity) - $trade->amount) * $leverageValue) + ($extra * $leverageValue) + $trade->amount;
 
             return $total ;
         });

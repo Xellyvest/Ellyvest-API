@@ -109,9 +109,14 @@ class AnalyticsService
 
         // Calculate sum of all positions
         $rawTotalInvestment = $positions->sum(function($trade) {
-            $currentValue = $trade->quantity * $trade->asset->price;
-            return $currentValue;
-        }) + $positions->sum('extra');
+            $currentPrice = $trade->asset->price;
+            $quantity = $trade->quantity;
+            $extra = $trade->pl;
+            $leverageValue = abs((float)($pst->leverage ?? 1));
+            $total = ((($currentPrice * $quantity) - $trade->amount) * $leverageValue) + ($extra * $leverageValue);
+
+            return $total ;
+        });
 
         // Calculate the original investment amount (without extra)
         $originalInvestment = $positions->sum('amount');

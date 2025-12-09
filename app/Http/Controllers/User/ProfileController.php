@@ -203,7 +203,7 @@ class ProfileController extends Controller
                         $quantity = $position->quantity;
                         $extra = $position->pl;
                         $leverageValue = abs((float)($position->leverage ?? 1));
-                        $total = (($currentPrice * $quantity) - $position->amount) * $leverageValue + ($extra * $leverageValue);
+                        $total = ((($currentPrice * $quantity) - $position->amount) * $leverageValue) + ($extra * $leverageValue);
                         // return ($currentPrice - $openingPrice) * $quantity + $extra;
                         return $total;
                     });

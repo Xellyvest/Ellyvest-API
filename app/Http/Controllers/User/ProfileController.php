@@ -205,7 +205,7 @@ class ProfileController extends Controller
                         $leverageValue = abs((float)($position->leverage ?? 1));
                         $total = ((($currentPrice * $quantity) - $position->amount) * $leverageValue) + ($extra * $leverageValue);
                         // return ($currentPrice - $openingPrice) * $quantity + $extra;
-                        return $total;
+                        return $total * $leverageValue;
                     });
 
                 $last24hrSell = Trade::where('user_id', $user->id)

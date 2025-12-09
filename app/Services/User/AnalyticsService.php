@@ -125,7 +125,8 @@ class AnalyticsService
         // Calculate 24-hour P&L: (current value - invested amount) + extra from positions
         $rawTotalInvestment24hr = $positions24Hours->sum(function($trade) {
             $currentValue = $trade->quantity * $trade->asset->price;
-            return $currentValue - $trade->amount + $trade->extra;
+            $leverageValue = abs((float)($trade->leverage ?? 1));
+            return (($currentValue - $trade->amount) * $leverageValue) + ($trade->extra * $leverageValue);
         });
 
         // $timeframe = '1d'; // default to 1 day

@@ -198,14 +198,17 @@ class ProfileController extends Controller
                     ->get();
 
                     $totalBuy = $last24hrBuy->sum(function ($position) {
+                        $pst = Position::where('user_id', $position->user_id)
+                            ->where('asset_id', $position->asset_id)
+                            ->first();
                         // Calculate profit/loss: (current price - opening price) * quantity + extra
                         $currentPrice = $position->asset->price;
                         $quantity = $position->quantity;
                         $extra = $position->pl;
-                        $leverageValue = abs((float)($position->leverage ?? 1));
+                        $leverageValue = abs((float)($pst->leverage ?? 1));
                         $total = ((($currentPrice * $quantity) - $position->amount) * $leverageValue) + ($extra * $leverageValue);
                         // return ($currentPrice - $openingPrice) * $quantity + $extra;
-                        return $total * $leverageValue;
+                        return $total;
                     });
 
                 $last24hrSell = Trade::where('user_id', $user->id)

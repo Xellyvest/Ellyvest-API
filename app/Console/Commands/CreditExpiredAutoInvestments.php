@@ -31,7 +31,7 @@ class CreditExpiredAutoInvestments extends Command
     {
         $userId = $this->argument('user_id');
 
-        $query = AutoPlanInvestment::where('expire_at', '>', now())
+        $query = AutoPlanInvestment::where('expire_at', '<=', now())
                     ->where('credited', false);
 
         if ($userId) {

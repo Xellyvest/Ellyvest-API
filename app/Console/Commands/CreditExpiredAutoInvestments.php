@@ -72,7 +72,7 @@ class CreditExpiredAutoInvestments extends Command
             $investment->credited = true;
             $investment->save();
 
-            $this->info("Credited ${$amountToCredit} to user ID {$user->id} for investment ID {$investment->id}");
+            $this->info("Credited {$amountToCredit} to user ID {$user->id} for investment ID {$investment->id}");
         }
 
         return 0;

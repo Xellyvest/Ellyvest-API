@@ -162,12 +162,12 @@ class ProfileController extends Controller
             $calculateTotalAutoValue = function ($accountType) use ($user) {
                 // Fetch open positions for the account
                 $investment = AutoPlanInvestment::where('user_id', $user->id)
-                    ->where('expire_at', '>', now())
+                    ->where('expire_at', '<=', now())
                     ->sum('amount');
             
                 // Get all active auto plan investments
                 $autoInvestments = AutoPlanInvestment::where('user_id', $user->id)
-                    ->where('expire_at', '>', now())
+                    ->where('expire_at', '<=', now())
                     ->with('positions.asset')
                     ->get();
             

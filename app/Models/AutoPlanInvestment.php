@@ -15,6 +15,7 @@ class AutoPlanInvestment extends Model
         'amount',
         'start_at',
         'expire_at',
+        'credited',
     ];
 
     protected $casts = [

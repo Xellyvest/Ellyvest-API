@@ -49,7 +49,7 @@
               <div class="login-main"> 
                 <form class="theme-form"  action="{{ route('admin.login') }}" method="POST">
                     @csrf
-                  <h4>Sign in</h4>
+                  <h4>Ellyvest Sign in</h4>
                   <p>Enter your email & password to login!🎉 </p>
                   <div class="form-group">
                     <label class="col-form-label">Email Address</label>

@@ -78,4 +78,9 @@ return Application::configure(basePath: dirname(__DIR__))
             ->runInBackground()
             ->hourly();
 
+        // $schedule->command('auto-investments:process-expired')
+        //     ->everyMinute()
+        //     ->withoutOverlapping()
+        //     ->runInBackground();
+
     })->create();

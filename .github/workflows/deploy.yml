@@ -27,12 +27,12 @@ jobs:
           --exclude='.git' \
           --exclude='node_modules' \
           --exclude='assets/img' \
-          ./ root@${{ secrets.SSH_HOST }}:/var/www/itrust-api/
+          ./ root@${{ secrets.SSH_HOST }}:/var/www/api/
 
     - name: Run safe updates
       run: |
         ssh -o StrictHostKeyChecking=no root@${{ secrets.SSH_HOST }} "
-          cd /var/www/itrust-api
+          cd /var/www/api
 
           # Pull updates safely
           git pull origin main

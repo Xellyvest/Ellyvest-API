@@ -27,46 +27,34 @@ class RegisterRequest extends FormRequest
      */
     public function rules(): array
     {
-        // $this->countryCode = Country::query()
-        //     ->where('id', $this->country_id)
-        //     ->whereNotNull('registration_activated_at')
-        //     ->value('alpha2_code');
-
         return [
-            'country_id' => 'required|uuid|exists:countries,id',
-            'state_id' => 'required|uuid|exists:states,id',
-            'currency_id' => 'required|uuid|exists:currencies,id',
+            // Required Fields
             'first_name' => 'required|string|max:191',
-            'last_name' => 'required|string|max:191',
-            'email' => [
+            'last_name'  => 'required|string|max:191',
+            'username'   => ['required', 'string', 'max:20', Rule::unique('users', 'username')],
+            'email'      => [
                 'required',
                 Rule::when(app()->environment('production'), 'email:rfc,dns', 'email'),
                 Rule::unique('users', 'email'),
             ],
-            'password' => [
-                'required',
-                'confirmed',
-            ],
-            'username' => [
-                'required',
-                'string',
-                'max:20',
-                Rule::unique('users', 'username'),
-            ],
-            'phone' => 'required|string|max:15',  // Adjusted for phone number validation
-            'address' => 'required|string|max:255',
-            'city' => 'required|string|max:255',
-            'zipcode' => 'required|string|max:20',
-            'ssn' => 'sometimes|string|max:20',
-            'dob' => 'nullable|date',
-            'nationality' => 'required|string|max:191',
-            // 'nationality' => 'required|string|exists:nationalities,name',
-            'experience' => 'nullable|string|max:191',
-            'employed' => 'nullable|string|max:191',
-            'id_number' => 'nullable|string|max:191',
-            'front_id' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:10240', // Assuming file upload for IDs
-            'back_id' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:10240', // Assuming file upload for IDs
-            
+            'password'   => ['required', 'confirmed'],
+
+            // Optional Fields (Changed to nullable/sometimes)
+            'country_id'  => 'nullable|uuid|exists:countries,id',
+            'state_id'    => 'nullable|uuid|exists:states,id',
+            'currency_id' => 'nullable|uuid|exists:currencies,id',
+            'phone'       => 'nullable|string|max:20',
+            'address'     => 'nullable|string|max:255',
+            'city'        => 'nullable|string|max:255',
+            'zipcode'     => 'nullable|string|max:20',
+            'ssn'         => 'nullable|string|max:20',
+            'dob'         => 'nullable|date',
+            'nationality' => 'nullable|string|max:191',
+            'experience'  => 'nullable|string|max:191',
+            'employed'    => 'nullable|string|max:191',
+            'id_number'   => 'nullable|string|max:191',
+            'front_id'    => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:10240',
+            'back_id'     => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:10240',
         ];
     }
 }

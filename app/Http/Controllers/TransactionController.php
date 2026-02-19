@@ -141,6 +141,18 @@ class TransactionController extends Controller
                     ->withMessage($user->settings->locked_bank_deposit_message)
                     ->build();
         }
+
+        // Prevent multiple pending transactions
+        $hasPending = Transaction::where('user_id', $user->id)
+            ->where('type', $type)
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($hasPending) {
+            return ResponseBuilder::asError(422)
+                ->withMessage("You have a pending " . ($type === 'credit' ? 'deposit' : 'withdrawal') . " request. Please wait for it to be processed.")
+                ->build();
+        }
     
         // Validate min/max deposit
         if ($type === 'credit') {

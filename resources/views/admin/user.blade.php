@@ -94,7 +94,7 @@
                                             <!-- <td>
                                                 <p class="f-light truncate-content">
                                                     @if($user->wallet)
-                                                        {{ $user->currency->sign }} {{ $user->wallet->getBalance('wallet') }}
+                                                        {{ $user->currency->sign ?? 'N/A' }} {{ $user->wallet->getBalance('wallet') }}
                                                     @endif
                                                 </p>
                                             </td> -->

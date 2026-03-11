@@ -3,7 +3,7 @@
 <x-slot:header>
 <x-mail::header :url="config('app.frontend.url')">
 <!-- {{ config('app.name') }} -->
-<img src="https://api.itrustinvestment.com/logo.png" style="width: 80px; height: 24px;" class="logo">
+<img src="https://api.ellyvest.com/logo.png" style="width: 80px; height: 24px;" class="logo">
 </x-mail::header>
 </x-slot:header>
 

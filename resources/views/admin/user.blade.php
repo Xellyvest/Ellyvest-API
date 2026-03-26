@@ -78,7 +78,7 @@
                                                 <p class="f-light">{{ $user->phone }}</p>
                                             </td>
                                             <td>
-                                                <p class="f-light text-capitalize">{{ $user->country->name ?? 'N/A' }}</p>
+                                                <p class="f-light text-capitalize">{{ $user->country?->name ?? 'N/A' }}</p>
                                             </td>
                                             <td> 
                                                 <p class="f-light">USD</p>

@@ -65,7 +65,7 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Currency</label>
-                                            <input class="form-control" value="{{ $user->currency->name }} ({{ $user->currency->symbol }})" disabled>
+                                            <input class="form-control" value="{{ $user->currency?->name }} ({{ $user->currency?->symbol }})" disabled>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Status</label>
@@ -95,7 +95,7 @@
                                         <div class="revenuegrowth-details my-3"> 
                                             <div class="growth-details">
                                                 <span class="f-light f-12  text-uppercase">Cash Balance</span>
-                                                <h4 class="fw-bold mb-1">{{ $user->currency->sign }}{{ number_format($balance, 2) }}</h4>
+                                                <h4 class="fw-bold mb-1">{{ $user->currency?->sign }}{{ number_format($balance, 2) }}</h4>
                                                 <div class="mb-4">
                                                     <!-- <span class="f-light text-success f-12 f-w-600">+40.15%</span> -->
                                                 </div>
@@ -104,7 +104,7 @@
                                         <div class="revenuegrowth-details my-3"> 
                                             <div class="growth-details">
                                                 <span class="f-light f-12  text-uppercase">Brokerage Balance</span>
-                                                <h4 class="fw-bold mb-1">{{ $user->currency->sign }}{{ number_format($brokerage_balance, 2) }}</h4>
+                                                <h4 class="fw-bold mb-1">{{ $user->currency?->sign }}{{ number_format($brokerage_balance, 2) }}</h4>
                                                 <div class="mb-4">
                                                     <!-- <span class="f-light text-success f-12 f-w-600">+40.15%</span> -->
                                                 </div>
@@ -113,7 +113,7 @@
                                         <div class="revenuegrowth-details my-3"> 
                                             <div class="growth-details">
                                                 <span class="f-light f-12  text-uppercase">Auto Balance</span>
-                                                <h4 class="fw-bold mb-1">{{ $user->currency->sign }}{{ number_format($auto_balance, 2) }}</h4>
+                                                <h4 class="fw-bold mb-1">{{ $user->currency?->sign }}{{ number_format($auto_balance, 2) }}</h4>
                                                 <div class="mb-4">
                                                     <!-- <span class="f-light text-success f-12 f-w-600">+40.15%</span> -->
                                                 </div>
@@ -122,7 +122,7 @@
                                         <div class="revenuegrowth-details my-3"> 
                                             <div class="growth-details">
                                                 <span class="f-light f-12  text-uppercase">Savings Balance</span>
-                                                <h4 class="fw-bold mb-1">{{ $user->currency->sign }}{{ number_format($savings_balance, 2) }}</h4>
+                                                <h4 class="fw-bold mb-1">{{ $user->currency?->sign }}{{ number_format($savings_balance, 2) }}</h4>
                                                 <div class="mb-4">
                                                     <!-- <span class="f-light text-success f-12 f-w-600">+40.15%</span> -->
                                                 </div>
@@ -297,7 +297,7 @@
                                 <label class="form-label">Currency</label>
                                 <select class="form-control btn-square" name="currency_id">
                                     @foreach($currencies as $currency)
-                                        <option value="{{$currency->id}}" @if($currency->id == $user->currency->id) selected @endif>{{$currency->name}}  ({{$currency->symbol}})</option>
+                                        <option value="{{$currency->id}}" @if($currency->id == $user->currency?->id) selected @endif>{{$currency->name}}  ({{$currency->symbol}})</option>
                                     @endforeach
                                 </select>
                                 </div>
@@ -779,7 +779,7 @@
                                                     @foreach($transactions as $transaction)
                                                         <tr>
                                                             <th scope="row">{{ $loop->iteration + ($transactions->currentPage() - 1) * $transactions->perPage() }}</th>
-                                                            <td class="truncate-content">{{ $transaction->amount }}{{ $user->currency->symbol }}</td>
+                                                            <td class="truncate-content">{{ $transaction->amount }}{{ $user->currency?->symbol }}</td>
                                                             <td> 
                                                                 <span class="truncate-content badge @if($transaction->type == 'credit') badge-light-success @elseif($transaction->type == 'transfer') badge-light-info @else badge-light-danger @endif">
                                                                     @if($transaction->type == 'credit') Credit @elseif($transaction->type == 'transfer') Transfer @else Debit @endif
@@ -879,9 +879,9 @@
                                                     <tr>
                                                         <th scope="row">1</th>
                                                         <td class="truncate-content">{{ $trade->asset->name }}</td>
-                                                        <td class="truncate-content">{{ number_format($trade->amount, 2) }} {{ $user->currency->symbol }}</td>
+                                                        <td class="truncate-content">{{ number_format($trade->amount, 2) }} {{ $user->currency?->symbol }}</td>
                                                         <td>{{ number_format($trade->quantity, 6) }}</td>
-                                                        <td> <p class="text-success">+0.00 {{ $user->currency->sign }}</p> </td>
+                                                        <td> <p class="text-success">+0.00 {{ $user->currency?->sign }}</p> </td>
                                                         <td> <p class="text-success">{{ $trade->status }}</p> </td>
                                                         <td> <p class="truncate-content">{{ $trade['created_at']->format('d M, Y \a\t h:i A') }}</p> </td>
                                                         <td> 
@@ -918,8 +918,8 @@
                                                     <tr>
                                                         <th scope="row">1</th>
                                                         <td>{{ $account->savingsAccount->name }}</td>
-                                                        <td>{{ number_format($account->balance, 2) }} {{ $user->currency->symbol }}</td>
-                                                        <td> <p class="text-success">+0.00 {{ $user->currency->sign }}</p> </td>
+                                                        <td>{{ number_format($account->balance, 2) }} {{ $user->currency?->symbol }}</td>
+                                                        <td> <p class="text-success">+0.00 {{ $user->currency?->sign }}</p> </td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>

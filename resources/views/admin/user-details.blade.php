@@ -61,7 +61,7 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Country</label>
-                                            <input class="form-control" value="{{ $user->country->name }}" disabled>
+                                            <input class="form-control" value="{{ $user->country?->name }}" disabled>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Currency</label>

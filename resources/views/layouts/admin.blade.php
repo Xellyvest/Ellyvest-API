@@ -9,7 +9,7 @@
     <meta name="author" content="pixelstrap">
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
-    <title>ITrust - ADMIN ACCESS</title>
+    <title>Ellyvest - ADMIN ACCESS</title>
     <!-- Google font-->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
@@ -509,6 +509,14 @@
                     <svg class="fill-icon">
                       <use href="{{ asset('admin/assets/svg/icon-sprite.svg') }}#fill-sample-page"></use>
                     </svg><span>Profile</span></a>
+                </li>
+                <li class="sidebar-list"><i class="fa fa-thumb-tack"></i><a class="sidebar-link sidebar-title link-nav" href="{{ route('admin.asset') }}">
+                    <svg class="stroke-icon">
+                      <use href="{{ asset('admin/assets/svg/icon-sprite.svg') }}#stroke-sample-page"></use>
+                    </svg>
+                    <svg class="fill-icon">
+                      <use href="{{ asset('admin/assets/svg/icon-sprite.svg') }}#fill-sample-page"></use>
+                    </svg><span>Asset</span></a>
                 </li>
                 <li class="sidebar-list"><i class="fa fa-thumb-tack"></i><a class="sidebar-link sidebar-title link-nav" href="{{ route('admin.settings') }}">
                     <svg class="stroke-icon"> 

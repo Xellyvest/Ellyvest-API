@@ -1,16 +1,17 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\AuthController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\TradeController;
 use App\Http\Controllers\Admin\ArticleController;
+use App\Http\Controllers\Admin\AssetController;
+use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\AutoinvestController;
+use App\Http\Controllers\Admin\PaymentMethodController;
+use App\Http\Controllers\Admin\PositionController;
 use App\Http\Controllers\Admin\SavingsController;
 use App\Http\Controllers\Admin\SettingController;
-use App\Http\Controllers\Admin\PositionController;
+use App\Http\Controllers\Admin\TradeController;
 use App\Http\Controllers\Admin\TransactionController;
-use App\Http\Controllers\Admin\PaymentMethodController;
+use App\Http\Controllers\Admin\UserController;
+use Illuminate\Support\Facades\Route;
 
 
 Route::get('/login', function () {
@@ -113,4 +114,7 @@ Route::group(['middleware' => ['active_admin']], function (){
     Route::post('/auto-invest/invest', [AutoinvestController::class, 'startInvestment'])->name('auto.plans.invest');
     Route::put('/auto-invest/investment/{investment}', [AutoinvestController::class, 'updateInvestment'])->name('auto-investments.update');
 
+    Route::get('/assets/all', [AssetController::class, 'index'])->name('asset');
+    Route::post('/assets/store', [AssetController::class, 'store'])->name('assets.store');
+    Route::delete('/assets/{id}', [AssetController::class, 'destroy'])->name('assets.destroy');
 });

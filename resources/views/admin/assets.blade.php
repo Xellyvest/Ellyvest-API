@@ -161,8 +161,8 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label>Symbol (e.g., AAPL, BTCUSD)</label>
-                    <input type="text" name="symbol" class="form-control" required placeholder="Enter symbol">
+                    <label></label>
+                    <input type="text" name="symbol" class="form-control" required placeholder="">
                 </div>
                 <div class="mb-3">
                     <label>Asset Type</label>
